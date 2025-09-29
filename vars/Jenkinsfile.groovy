@@ -1,5 +1,5 @@
 node {
-  // checkout scm  // <-- Comment this line out
+  checkout scm
   
   // Use local files instead of Git checkout
   def workspace = pwd()  // Get current Jenkins workspace path for file operations
