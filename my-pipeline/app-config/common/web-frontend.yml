@@ -1,0 +1,47 @@
+# Harry's Generated App Config: web-frontend
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-frontend
+  namespace: harry-dev
+  labels:
+    app: web-frontend
+    environment: dev
+    generated-by: harry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+        environment: dev
+    spec:
+      containers:
+      - name: web-frontend
+        image: react:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-frontend-service
+  namespace: harry-dev
+spec:
+  selector:
+    app: web-frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP

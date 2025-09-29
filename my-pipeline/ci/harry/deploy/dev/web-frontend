@@ -1,0 +1,17 @@
+// Harry's Generated App: web-frontend
+// Generated on: Mon, Sep 29, 2025  2:30:57 PM
+
+library identifier: 'my-pipeline@master', changelog: false
+
+harryDeploy {
+    name = 'web-frontend'
+    image = 'react'
+    default_tag = 'latest'
+    namespace = 'harry-dev'
+    port = 3000
+    environment = 'dev'
+    
+    // Auto-generated settings
+    generated_by = 'harry-generator'
+    generated_at = '2025-09-29T09:00:57Z'
+}

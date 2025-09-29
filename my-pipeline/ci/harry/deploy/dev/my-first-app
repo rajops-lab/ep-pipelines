@@ -1,0 +1,25 @@
+// Harry's First App Deployment Job
+// Copy this pattern for every new app!
+
+library identifier: 'my-pipeline@master', changelog: false
+
+// Call our shared library function
+harryDeploy {
+    // App identification
+    name = 'my-first-app'
+    
+    // Docker image details  
+    image = 'nginx'
+    default_tag = '1.21'
+    
+    // Kubernetes details
+    namespace = 'harry-dev'
+    
+    // Optional: Add more config as needed
+    replicas = 2
+    port = 80
+    
+    // Environment specific settings
+    environment = 'dev'
+    debug_enabled = true
+}

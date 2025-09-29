@@ -1,0 +1,74 @@
+# Harry's Pipeline System - Main Configuration
+# This is the master config file that explains the entire system
+
+# =============================================================================
+# SYSTEM OVERVIEW
+# =============================================================================
+system:
+  name: "Harry's Jenkins Pipeline System"
+  version: "1.0"
+  description: "Complete Jenkins pipeline system with shared libraries and deployment automation"
+
+# =============================================================================
+# CONFIGURATION STRUCTURE
+# =============================================================================
+configuration_structure:
+  environments:
+    dev: "config/environments/dev-config.yaml"
+    prod: "config/environments/prod-config.yaml"
+    description: "Environment-specific settings (memory, CPU, replicas, feature flags)"
+  
+  applications:
+    my-first-app: "config/apps/my-first-app/config.yaml"
+    user-api: "config/apps/user-api/config.yaml" 
+    auth-service: "config/apps/auth-service/config.yaml"
+    redis-cache: "config/apps/redis-cache/config.yaml"
+    description: "Application-specific Kubernetes deployment templates"
+
+# =============================================================================
+# SHARED LIBRARY FUNCTIONS
+# =============================================================================
+shared_libraries:
+  harryDeploy: "vars/harryDeploy.groovy"
+  harryDeployAdvanced: "vars/harryDeployAdvanced.groovy"
+  description: "Reusable deployment functions called by Jenkins jobs"
+
+# =============================================================================
+# JENKINS JOB CONFIGURATIONS  
+# =============================================================================
+jenkins_jobs:
+  development: "ci/harry/deploy/dev/"
+  production: "ci/harry/deploy/prod/"
+  staging: "ci/harry/deploy/staging/"
+  seed_job: "ci/harry/seed-job"
+  description: "Jenkins pipeline job definitions"
+
+# =============================================================================
+# REPOSITORY CONFIGURATION
+# =============================================================================
+repository:
+  url: "https://github.com/rajops-lab/ep-pipelines.git"
+  branch: "main"
+  shared_library_path: "my-pipeline/"
+  seed_job_path: "my-pipeline/ci/harry/seed-job"
+
+# =============================================================================
+# USAGE PATTERNS
+# =============================================================================
+usage:
+  create_new_app: "./generate-app.sh [app-name] [image] [env] [tag] [port]"
+  view_environments: "cat config/environments/dev-config.yaml"
+  view_app_config: "cat config/apps/my-first-app/config.yaml"
+  run_tests: "cat HARRY_TESTING_GUIDE.md"
+
+# =============================================================================
+# FILE LOCATIONS (EASY REFERENCE)
+# =============================================================================
+quick_reference:
+  main_config: "config/config.yaml"                    # This file
+  dev_environment: "config/environments/dev-config.yaml"
+  prod_environment: "config/environments/prod-config.yaml"
+  app_configs: "config/apps/*/config.yaml"
+  shared_functions: "vars/*.groovy"
+  jenkins_jobs: "ci/harry/deploy/*/"
+  documentation: "HARRY_*.md"

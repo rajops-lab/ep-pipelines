@@ -1,0 +1,30 @@
+# Harry's Production Environment Configuration
+
+# Environment Settings
+environment_name: "production"
+namespace: "harry-prod"
+log_level: "INFO"  # Less verbose in production
+
+# Resource Defaults for PROD (larger resources)
+default_memory_request: "512Mi"
+default_memory_limit: "1Gi"
+default_cpu_request: "250m"
+default_cpu_limit: "500m"
+
+# Replica Defaults
+default_replicas: 3  # Multiple replicas for high availability
+
+# Database Settings
+database_host: "prod-database.harry-prod.svc.cluster.local"
+database_port: 5432
+database_name: "harry_production"
+
+# Redis Settings  
+redis_host: "prod-redis.harry-prod.svc.cluster.local"
+redis_port: 6379
+
+# Feature Flags for PROD
+enable_debug_mode: false
+enable_mock_services: false
+enable_test_data: false
+strict_security: true

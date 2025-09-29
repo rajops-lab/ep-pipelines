@@ -1,0 +1,47 @@
+# Harry's Generated App Config: test-app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+  namespace: harry-dev
+  labels:
+    app: test-app
+    environment: dev
+    generated-by: harry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+        environment: dev
+    spec:
+      containers:
+      - name: test-app
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-service
+  namespace: harry-dev
+spec:
+  selector:
+    app: test-app
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

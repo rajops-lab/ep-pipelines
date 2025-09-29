@@ -1,0 +1,18 @@
+// Harry's Production App - Using Advanced Deployment!
+
+library identifier: 'my-pipeline@master', changelog: false
+
+harryDeployAdvanced {
+    name = 'my-production-app'
+    image = 'my-company/my-app'
+    default_tag = 'v1.2.3'
+    port = 8080
+    
+    // Production-specific settings
+    slack_channel = 'production-alerts'
+    
+    // Additional metadata
+    team = 'harry-team'
+    owner = 'harry@company.com'
+    monitoring_enabled = true
+}

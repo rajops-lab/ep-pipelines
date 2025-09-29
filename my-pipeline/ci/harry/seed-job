@@ -1,0 +1,43 @@
+// Harry's Master Seed Job
+// This creates all other deployment jobs
+
+library identifier: 'my-pipeline@master', changelog: false
+
+node {
+    stage('Checkout') {
+        checkout scm
+        echo "Checked out pipeline repository"
+    }
+    
+    stage('Generate Jobs') {
+        script {
+            // Find all deployment job files
+            def jobFiles = sh(
+                script: "find ci/harry/deploy -type f | head -10",
+                returnStdout: true
+            ).trim().split('\n')
+            
+            echo "Found ${jobFiles.size()} deployment jobs:"
+            jobFiles.each { jobFile ->
+                echo "  • ${jobFile}"
+            }
+            
+            echo "All jobs discovered successfully!"
+        }
+    }
+    
+    stage('Validate Structure') {
+        script {
+            // Check shared library files
+            sh "ls -la vars/*.groovy"
+            
+            // Check app configs
+            sh "ls -la app-config/common/*.yml"
+            
+            // Check environment configs  
+            sh "ls -la env-config/*/common-vars.yml"
+            
+            echo "Pipeline structure validated!"
+        }
+    }
+}

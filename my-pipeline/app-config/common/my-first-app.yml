@@ -1,0 +1,49 @@
+# Harry's First App Kubernetes Template
+# This is a standard Kubernetes deployment with templating
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-first-app
+  namespace: harry-dev
+  labels:
+    app: my-first-app
+    environment: dev
+    owner: harry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-first-app
+  template:
+    metadata:
+      labels:
+        app: my-first-app
+        environment: dev
+    spec:
+      containers:
+      - name: my-first-app
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-first-app-service
+  namespace: harry-dev
+spec:
+  selector:
+    app: my-first-app
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP

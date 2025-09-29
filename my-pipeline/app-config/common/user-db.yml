@@ -1,0 +1,47 @@
+# Harry's Generated App Config: user-db
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-db
+  namespace: harry-dev
+  labels:
+    app: user-db
+    environment: dev
+    generated-by: harry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-db
+  template:
+    metadata:
+      labels:
+        app: user-db
+        environment: dev
+    spec:
+      containers:
+      - name: user-db
+        image: postgres:13
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-db-service
+  namespace: harry-dev
+spec:
+  selector:
+    app: user-db
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP

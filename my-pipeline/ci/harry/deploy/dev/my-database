@@ -1,0 +1,14 @@
+// Harry's Database Service - Another copy-paste win!
+
+library identifier: 'my-pipeline@master', changelog: false
+
+harryDeploy {
+    name = 'my-database'
+    image = 'postgres'
+    default_tag = '13'
+    namespace = 'harry-dev'
+    replicas = 1  // Databases typically run single instance
+    port = 5432
+    environment = 'dev'
+    debug_enabled = false  // Don't debug database logs
+}

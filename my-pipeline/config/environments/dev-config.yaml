@@ -1,0 +1,30 @@
+# Harry's Development Environment Configuration
+
+# Environment Settings
+environment_name: "development"
+namespace: "harry-dev"
+log_level: "DEBUG"
+
+# Resource Defaults for DEV (smaller resources)
+default_memory_request: "128Mi"
+default_memory_limit: "256Mi"
+default_cpu_request: "100m"
+default_cpu_limit: "200m"
+
+# Replica Defaults
+default_replicas: 1  # Single replica for dev to save resources
+
+# Database Settings
+database_host: "my-database-service.harry-dev.svc.cluster.local"
+database_port: 5432
+database_name: "harry_dev"
+
+# Redis Settings  
+redis_host: "redis-service.harry-dev.svc.cluster.local"
+redis_port: 6379
+
+# Feature Flags for DEV
+enable_debug_mode: true
+enable_mock_services: true
+enable_test_data: true
+strict_security: false
