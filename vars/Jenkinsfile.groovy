@@ -11,7 +11,7 @@ node {
  
   def final_dsl = pipeline.createJob(config)
 	
-  jobDsl removedConfigFilesAction: 'DELETE', removedJobAction: 'DELETE', removedViewAction: 'DELETE', sandbox: true, scriptText: "$final_dsl"
+  jobDsl removedConfigFilesAction: 'DELETE', removedJobAction: 'DELETE', removedViewAction: 'DELETE', scriptText: "$final_dsl"
 }
 
  
