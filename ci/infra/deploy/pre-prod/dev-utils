@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployDevUtils {
+    environment = 'pre-prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'dev-utils'
+    namespace = 'assembly'
+    downstream_jobs = []
+}

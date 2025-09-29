@@ -1,0 +1,47 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: {{monitoring_port}}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 3
+resources:
+  requests:
+    cpu: 200m
+    memory: 4000Mi
+  limits:
+    memory: 5600Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=required-material'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    FLYWAY_ENABLE: {{flyway_enable}}
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+    FLYWAY_BASELINE_ON_MIGRATE: {{flyway_baseline_on_migrate}}
+    DAYS_TO_RETAIN_AGGREGATE_LINEOUT_MATERIALS: 15
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    BUSINESS_UNIT_NAME: 'PVBU'
+    CORRECT_HIERARCHY: 'ROOT.NS2000,ROOT.NS2063,NS2000.NS2026,ROOT.NS2033,ROOT.NS2035,ROOT.NS2060,ROOT.NS2063,ROOT.NS2061,ROOT.NS2031,ROOT.ZNS320,ROOT.ZNS570,ROOT.NS2046,ROOT.ZNS410,ROOT.ZNS712,ROOT.ZNS610,ROOT.ZNS470'
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+cronjobs:
+  apiVersion: batch/v1
+  http:
+    - name: purge-old-lined-out-aggregates
+      schedule: '0 0 * * *'
+      method: PATCH
+      context: support/purge-old-lined-out-aggregates
+      headers:
+        Accept: "application/json"

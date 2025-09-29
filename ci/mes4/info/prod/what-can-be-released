@@ -1,0 +1,10 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+whatCanBeReleased {
+    kubeconfig_credential = 'ep-kube-config'
+    namespace = 'mes4'
+    chart = 'ep-app-0.1.0'
+    slack_channel = 'ep-releases-prod'
+}

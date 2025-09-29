@@ -1,0 +1,76 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: {{monitoring_port}}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 3
+resources:
+  requests:
+    cpu: 50m
+    memory: 381Mi
+  limits:
+    memory: 534Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{plant_master_db}}?ApplicationName=plant-master'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{plant_master_db_username}}
+    POSTGRES_PASSWORD: {{plant_master_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: plant-master
+      authn: oidc-auth
+      user_info_endpoint: {{keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      cors_allowed_origins:
+        - https://maintenance.ipms4.tatamotors.com
+        - https://digital-twin.ipms4.tatamotors.com
+        - https://planning.ipms4.tatamotors.com
+      service_path: /
+      routes:
+        hosts:
+          - api.{{ep_base_domain}}
+        paths:
+          - /plant-master
+        strip_path: "true"
+    - name: avantgarde-plant-master
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://production-broadcast.{{esakha_base_domain}}
+      routes:
+        hosts:
+          - api.{{esakha_base_domain}}
+        paths:
+          - /plant-master
+        strip_path: "true"

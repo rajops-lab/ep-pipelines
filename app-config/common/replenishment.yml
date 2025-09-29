@@ -1,0 +1,177 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: {{replica_count}}
+resources:
+  requests:
+    cpu: {{cpu_request}}
+    memory: {{memory_request}}
+  limits:
+    memory: {{memory_limit}}
+env:
+  plaintext:
+    DB_HOST: {{replenishment_rds_host}}
+    DB_PORT: {{replenishment_rds_port}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    AUTHORIZATION_SERVICE_BASE_URI: {{sadhan_authorization_base_url}}
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+  secret:
+    DB_NAME: {{replenishment_db}}
+    DB_USERNAME: {{replenishment_db_username}}
+    DB_PASSWORD: {{replenishment_db_password}}
+    SLACK_ALERTS_CHANNEL_NAME: {{replenishment_slack_alert_channel_name}}
+    SLACK_APP_OAUTH_TOKEN: {{replenishment_slack_app_oauth_token}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: replenishment-swagger
+      authn: basic-auth
+      service_path: /replenishment-swagger
+      routes:
+        hosts:
+          - api.{{sadhan_base_domain}}
+        paths:
+          - /replenishment-swagger
+        strip_path: "true"
+    - name: sadhan-config
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      cors_allowed_origins:
+        - https://{{replenishment_app_name}}-config.{{sadhan_base_domain}}
+        - https://{{replenishment_app_name}}.{{sadhan_base_domain}}
+        - {{local_development_domain}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      routes:
+        hosts:
+          - api.{{replenishment_app_name}}-config.{{sadhan_base_domain}}
+          - api.{{sadhan_base_domain}}
+        paths:
+          - /config
+        strip_path: "false"
+      read_timeout: 900
+    - name: replenishment
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      cors_allowed_origins:
+        - https://{{replenishment_app_name}}.{{sadhan_base_domain}}
+        - https://production-broadcast.{{esakha_base_domain}}
+        - {{local_development_domain}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      routes:
+        hosts:
+          - api.{{replenishment_app_name}}.{{sadhan_base_domain}}
+          - api.{{sadhan_base_domain}}
+        paths:
+          - /replenishment
+        strip_path: "false"
+    - name: srs
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      cors_allowed_origins:
+        - https://{{srs_base_domain}}
+        - https://{{srs_base_domain_ui}}
+        - https://production-broadcast.{{esakha_base_domain}}
+        - {{local_development_domain}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      routes:
+        hosts:
+          - api.{{srs_base_domain}}
+        paths:
+          - /srs
+        strip_path: "false"
+cronjobs:
+  apiVersion: {{cron_job_api_version}}
+  app:
+    - name: data-dump
+      schedule: {{data_dump_schedule}}
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-dump-util:1cb08992d6ef8e4fdbee07aad7ccf307dca03978"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 /usr/local/bin/main.py'
+      env:
+        plaintext:
+          DB_HOST: '{{replenishment_rds_host}}'
+          DB_NAME: '{{replenishment_db}}'
+          TABLE_LIST: '["dt_line", "dt_plant", "dt_shop", "dt_station", "mhe", "mhe_storage_config", "part", "part_stock", "station_storage", "station_wise_bom", "storage", "storage_area", "storage_part_config", "exploded_bom"]'
+          BUCKET_NAME: '{{replenishment_data_dump_bucket}}'
+          PLATFORM_NAME: 'sadhan'
+          APPLICATION_NAME: 'replenishment'
+        secret:
+          DB_USERNAME: {{replenishment_db_username}}
+          DB_PASSWORD: {{replenishment_db_password}}
+
+    - name: data-backup
+      schedule: '30 18 1 * *'
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-backup-util:4688e1258b1960370e35373e691b2b974662df28"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 -m data_backup.main'
+      env:
+        plaintext:
+          DB_HOST: '{{replenishment_rds_host}}'
+          DB_PORT: '{{replenishment_rds_port}}'
+          DB_NAME: '{{replenishment_db}}'
+          TABLE_TIME_AWARE_COLUMN_AND_PLANT_CODE_COLUMN_LIST: '[["part_stock_aud", "updated_at", "plant_id"], ["ticket", "updated_at", "plant_id"], ["ticket_aud", "updated_at", "plant_id"], ["ticket_label", "created_at", "plant_id"]]'
+          TABLE_AND_COLUMN_WITH_PLANT_CODE_VALUE: '["dt_plant","id"]'
+          BUCKET_NAME: '{{replenishment_data_dump_bucket}}'
+          PLATFORM_NAME: 'sadhan'
+          APPLICATION_NAME: 'replenishment'
+        secret:
+          DB_USERNAME: {{replenishment_db_username}}
+          DB_PASSWORD: {{replenishment_db_password}}
+
+    - name: data-archive
+      schedule: '30 18 2-31 * *'
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-archive-util:4688e1258b1960370e35373e691b2b974662df28"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 -m data_archive.main'
+      env:
+        plaintext:
+          DB_HOST: '{{replenishment_rds_host}}'
+          DB_PORT: '{{replenishment_rds_port}}'
+          DB_NAME: '{{replenishment_db}}'
+          TABLE_AND_TIME_AWARE_COLUMN_LIST: '[["part_stock_aud", "updated_at"], ["ticket_label", "created_at"], ["ticket", "updated_at"], ["ticket_aud", "updated_at"]]'
+          THRESHOLD_DAYS: '31'
+        secret:
+          DB_USERNAME: {{replenishment_db_username}}
+          DB_PASSWORD: {{replenishment_db_password}}

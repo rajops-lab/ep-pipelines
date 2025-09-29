@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-assembly-support-ui.git'
+    ecr_repo_name = 'ep-assembly-support-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-assembly-support-ui'
+    image_tag = 'ep-assembly-support-ui:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/assembly-support-ui']
+}

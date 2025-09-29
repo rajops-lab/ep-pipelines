@@ -1,0 +1,87 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 5Mi
+  limits:
+    memory: 7Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.{{ep_base_domain}}",
+          ESAKHA_API_BASE_URL: "https://api.{{ep_base_domain}}",
+          AUTH_ENDPOINT: "{{keycloak_base_url}}/auth",
+          ENV_TYPE: "TEST",
+          HOME_UI_BASE_URL: "https://home.{{ep_base_domain}}",
+          PPC_UI_BASE_URL: "https://planning.{{ep_base_domain}}",
+          QUALITY_UI_BASE_URL: "https://quality.{{ep_base_domain}}",
+          PRODUCTION_BROADCAST_UI_BASE_URL: "https://production-broadcast.{{esakha_base_domain}}",
+          ESAKHA_UI_BASE_URL: "https://ppap.{{esakha_base_domain}}",
+          MAINTENANCE_UI_BASE_URL: "https://maintenance.{{ep_base_domain}}",
+          PERFORMANCE_INSIGHTS_UI_BASE_URL: "https://pinsights.{{esakha_base_domain}}",
+          RECONCILIATION_UI_BASE_URL: "https://recon.{{esakha_base_domain}}",
+          DIGITAL_TWIN_UI_BASE_URL: "https://digital-twin.{{ep_base_domain}}",
+          ESAKHA_USER_ONBOARDING_UI_BASE_URL: "https://user-onboarding.{{avantgarde_base_domain}}",
+          IPMS_USER_ONBOARDING_UI_BASE_URL: "https://user-onboarding.{{avantgarde_base_domain}}",
+          LEGAL_COMPLIANCE_UI_BASE_URL: "https://legal-comp.{{esakha_base_domain}}/",
+          FBV_UI_BASE_URL: "https://fbv.{{esakha_base_domain}}/",
+          PLI_UI_BASE_URL: "https://pli.{{esakha_base_domain}}/",
+          PLI_PV_UI_BASE_URL: "https://pli.{{esakha_pv_base_domain}}/",
+          NEEV_CV_UI_BASE_URL:"https://neevcv.{{esakha_base_domain}}/",
+          SCRAP_CV_UI_BASE_URL:"https://scrap.{{sadhan_base_domain}}/",
+          SCRAP_PV_UI_BASE_URL:"https://scrap.{{sadhan_pv_base_domain}}/",
+          SCRAP_EV_UI_BASE_URL:"https://scrap.{{sadhan_ev_base_domain}}/",
+          SUPPLEMENTARY_INVOICES_CV_UI_BASE_URL:"https://si.{{esakha_base_domain}}/",
+          SUPPLEMENTARY_INVOICES_PV_UI_BASE_URL:"https://si.{{esakha_base_domain}}/",
+          LOGISTICS_UI_BASE_URL: "https://e-logistics-planning.sadhan-pv-dev.tatamotors.com",
+          LOGISTICS_ESAKHA_UI_BASE_URL: "https://e-logistics-planning.esakha-pv-dev.tatamotors.com",
+          ASSET_MANAGEMENT_UI_BASE_URL: "https://asset-management.esakha-dev.tatamotors.com",
+          APPLICATION_VARIANT: "ipms4"
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "{{keycloak_realm}}",
+          "auth-server-url": "{{keycloak_base_url}}/auth/",
+          "ssl-required": "external",
+          "resource": "application-access",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: home-ui
+      authn: none
+      cors_allowed_origins:
+        - https://home.{{esakha_base_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - home.{{ep_base_domain}}
+        preserve_host: "true"

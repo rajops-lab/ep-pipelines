@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleSpecifiedJavaVersionWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-planning-statistics.git'
+    ecr_repo_name = 'ep-planning-statistics'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-planning-statistics'
+    image_tag = 'ep-planning-statistics:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/planning-statistics']
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:openjdk-17-alpine'
+}

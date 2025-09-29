@@ -1,0 +1,68 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: avant-garde-mes4-ev-dev.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+authorization_db: authorization
+authorization_db_username: authorization_rw
+machine_integration_db: machine_integration
+machine_integration_db_username: machine_integration_rw
+plant_master_db: plant_master
+plant_master_db_username: plant_master_rw
+production_planning_db: planning_dev
+production_planning_db_username: planning_dev_rw
+material_master_db: material_master_dev
+material_master_db_username: material_master_dev_rw
+gmes_integration_db: gmes_integration
+gmes_integration_db_username: gmes_integration_rw
+postgres_connection_pool: 5
+postgres_auto_ddl: update
+flyway_enable: true
+flyway_locations: classpath:migration/db/common,classpath:migration/db/mes4-ev
+flyway_baseline_on_migrate: false
+ep_base_domain: mes4-ev-dev.tatamotors.com
+kafka_ips:
+  - 172.16.234.110
+  - 172.16.234.252
+  - 172.16.234.170
+kafka_port: 9095
+keycloak_base_url: https://auth.ep-dev.tatamotors.com
+sadhan_keycloak_base_url: https://auth.sadhan-dev.tatamotors.com
+keycloak_realm: enterprise
+keycloak_user_info_endpoint: https://auth.ep-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+sadhan_keycloak_user_info_endpoint: https://auth.sadhan-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+local_development_domain: http://localhost:3000/
+sap_connector_rfc_base_url: http://sap-connector.assembly
+supplier_master_service_base_url: http://material-master.mes4
+material_kate_topic: pv.kate.material-master-v1
+po_master_db: po_master
+purchase_order_kate_topic: pv.kate.po-master-v1
+purchase_order_changes_kate_topic: pv.kate.po-master-changes-v1
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+sanand_exploded_bom_enable: true
+plant_ids:
+  - 5201
+sflt_for_tcf_mandt_field_value: 612
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+sadhan_base_domain: sadhan-ev-dev.tatamotors.com
+replenishment_client_secret: WzA6JyT3Tm046Il9y4xFFxGBo7DKTdkC
+mes4_base_domain: mes4-dev.tatamotors.com
+esakha_base_domain: esakha-dev-pv.tatamotors.com
+esakha_rds_host: replenishment-mes4-ev-dev.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+reconciliation_db: reconciliation
+reconciliation_db_username: reconciliation_rw
+email_notification_sender_email: no-reply@esakha-dev.tatamotors.com
+email_notification_bsl_group_email: ep-esakha-dev+bslgroup@sahaj.ai,ess527162@tatamotors.com
+email_notification_application_url: https://recon.esakha-dev-pv.tatamotors.com/
+email_notification_allowed_domains: vishleshan.net,sahaj.ai, tatamotors.com
+email_notification_region: ap-south-1
+cron_job_api_version: batch/v1
+avantgarde_base_domain: mes4-ev-dev.tatamotors.com
+central_keycloak_user_info_endpoint_external: https://qa.sso.tatamotors.com/auth/realms/Service/protocol/openid-connect/userinfo
+esakha_authorization_db: esakha_authorization
+esakha_authorization_db_username: esakha_authorization_rw

@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'ipms4/prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'dock-traffic-ui'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/dock-management-ui'
+    release_notes_slack_channel = 'ep-releases-prod'
+    ecr_repo_name = 'dock-traffic-mgmt-frontend-app'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/dock-traffic-mgmt-frontend-app'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../../info/prod/what-is-running']
+}

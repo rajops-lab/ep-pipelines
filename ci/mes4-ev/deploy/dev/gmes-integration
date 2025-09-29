@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'true'
+    environment = 'mes4-ev/dev'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'gmes-integration'
+    namespace = 'mes4'
+    github_repo = 'tmlconnected/ep-gmes-integration'
+    release_notes_slack_channel = 'ep-releases-dev'
+    ecr_repo_name = 'ep-gmes-integration'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-gmes-integration'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../info/dev/what-is-running']
+}

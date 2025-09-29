@@ -1,0 +1,74 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 200m
+    memory: 1200Mi
+  limits:
+    memory: 2048Mi
+env:
+  plaintext:
+    DATABASE_PORT : {{rds_port}}
+
+  secret:
+    DATABASE_NAME : {{pv_vtdms_master_db}}
+    DATABASE_USER : {{pv_vtdms_db_username}}
+    DATABASE_PASSWORD : {{pv_vtdms_db_password}}
+    DATABASE_HOST : {{rds_host_vtdms}}
+    SECRET_KEY: {{secret_key}}
+    AWS_SECRET_ACCESS_KEY_ID: {{ aws_access_key_vtdms }}
+    AWS_SECRET_ACCESSS_KEY: {{ aws_secret_vtdms }}
+    REGION_NAME: {{ region }}
+    S3_BUCKET_NAME: {{ s3_bucket_name }}
+    TOKEN_AUTHORIZATION: {{ token_authorisation }}
+    ENCRYPTION_DECRYPTION_KEY: {{ encryption_decryption_key }}
+    STANDARD_IV: {{ standard_iv }}
+    SFTP_HOST_NAME: {{ sftp_host_name }}
+    SFTP_USER_NAME: {{ sftp_user_name }}
+    SFTP_PASSWORD: {{ sftp_password }}
+    KEYCLOAK_URL_IP: {{keycloak_url_ip}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: vtdms
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://api.vtdms.sadhan-pv.tatamotors.com
+        - https://vtdms.sadhan-pv.tatamotors.com
+        - {{local_development_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+        - 'Access-Control-Allow-Origin: https://vtdms-transporter-broadcast.esakha-pv.tatamotors.com'
+      remove_headers:
+        - 'Server'
+      routes:
+        hosts :
+           - api.vtdms.sadhan-pv.tatamotors.com
+        paths:
+          - /
+        strip_path: "true"

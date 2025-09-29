@@ -1,0 +1,52 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: {{monitoring_port}}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 900m
+    memory: 404Mi
+  limits:
+    memory: 566Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=mes-integration'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KAFKA_RETRY_TOPIC: 'mes-retry-v1'
+    KAFKA_ERROR_TOPIC: 'mes-error-v1'
+    KAFKA_ENRICHED_MATERIAL_STATUS_UPDATED_TOPIC: 'production-planning.material-status-updated-v1'
+    KAFKA_RETRY_INTERVAL_MINUTE: 5
+    KAFKA_MAX_RETRY_ATTEMPT: 12
+    EP_PLANT_MASTER_BASE_URL: 'http://plant-master'
+    MES_API_BASE_URL: 'https://jsr-mes-api.ep-pre-prod.tatamotors.com/IPMS4/IPMS4.0-Integration'
+    MES_HOST_NAME: 'TMJSRMDCQAREP'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: mes-integration
+      authn: oidc-auth
+      user_info_endpoint: {{keycloak_user_info_endpoint}}
+      service_path: /
+      routes:
+        paths:
+          - /mes-integration
+        strip_path: "true"

@@ -1,0 +1,13 @@
+replica_count: 1
+plant_name: "pune"
+db_host: rds-pune
+db_port: 5432
+kafka_hosts:
+  - kafka1.assembly
+  - kafka2.assembly
+  - kafka3.assembly
+assembly_plant_spring_profiles: prod,mes4
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 1024Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-pune
+assembly_plant_instancegroup: assembly-pune

@@ -1,0 +1,65 @@
+{{- if and .Values.service (and .Values.cronjobs .Values.cronjobs.app) -}}
+{{- range .Values.cronjobs.app }}
+---
+apiVersion: {{ $.Values.cronjobs.apiVersion | default "batch/v1" }}
+kind: CronJob
+metadata:
+  namespace: {{ include "app.namespace" $ }}
+  name: {{ include "app.name" $ }}-{{.name}}
+  labels:
+    {{- include "app.labels" $ | nindent 4 }}
+spec:
+  schedule: "{{.schedule}}"
+  concurrencyPolicy: {{ .concurrencyPolicy | default "Allow" }}
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- if .hostAlias }}
+          hostAliases:
+            - ip: {{ .hostAlias.ip }}
+              hostnames:
+                - {{ .hostAlias.hostname }}
+          {{- end }}
+          restartPolicy: Never
+          containers:
+            - name: job
+              image: "{{.image}}"
+              {{- if .args }}
+              args:
+              {{- range $arg := .args }}
+              - {{ $arg }}
+              {{- end }}
+              {{- end }}
+              resources:
+                requests:
+                  memory: 300Mi
+                  cpu: 10m
+              {{- if .env }}
+              {{- if or .env.plaintext .env.fieldref }}
+              env:
+                {{- if .env.plaintext }}
+                {{- range $key, $val := .env.plaintext }}
+                - name: {{ $key }}
+                  value: {{ $val | quote }}
+                {{- end }}
+                {{- end }}
+                {{- if .env.fieldref }}
+                {{- range $key, $val := .env.fieldref }}
+                - name: {{ $key }}
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: {{ $val }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+              {{- if .env.secret }}
+              envFrom:
+                - secretRef:
+                    name: {{ include "app.name" $ }}-env-secrets
+              {{- end}}
+              {{- end}}
+{{- end }}
+{{- end }}

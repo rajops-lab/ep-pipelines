@@ -1,0 +1,188 @@
+app:
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-replenishment
+  livenessProbe: /actuator/health/liveness
+  monitoringPort: 9096
+  port: 9090
+  readinessProbe: /actuator/health/readiness
+  tag: 2db2d5c85776452b10e667ff04fc3da0c706bff3
+buildInfo:
+  ecr_repo_name: ep-replenishment
+  github_repo_name: tmlconnected/ep-replenishment
+cronjobs:
+  apiVersion: batch/v1
+  app:
+    - args:
+        - /bin/sh
+        - -c
+        - python3 /usr/local/bin/main.py
+      env:
+        plaintext:
+          APPLICATION_NAME: replenishment
+          BUCKET_NAME: sadhan-replenishment-ep-dev-data-backup
+          DB_HOST: replenishment-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+          DB_NAME: replenishment
+          PLATFORM_NAME: sadhan
+          TABLE_LIST: '["dt_line", "dt_plant", "dt_shop", "dt_station", "mhe", "mhe_storage_config",
+          "part", "part_stock", "station_storage", "station_wise_bom", "storage",
+          "storage_area", "storage_part_config", "exploded_bom"]'
+        secret: true
+      image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-dump-util:1cb08992d6ef8e4fdbee07aad7ccf307dca03978
+      name: data-dump
+      schedule: 0 22 31 2 *
+    - args:
+        - /bin/sh
+        - -c
+        - python3 -m data_backup.main
+      env:
+        plaintext:
+          APPLICATION_NAME: replenishment
+          BUCKET_NAME: sadhan-replenishment-ep-dev-data-backup
+          DB_HOST: replenishment-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+          DB_NAME: replenishment
+          DB_PORT: "5432"
+          PLATFORM_NAME: sadhan
+          TABLE_AND_COLUMN_WITH_PLANT_CODE_VALUE: '["dt_plant","id"]'
+          TABLE_TIME_AWARE_COLUMN_AND_PLANT_CODE_COLUMN_LIST: '[["part_stock_aud", "updated_at",
+          "plant_id"], ["ticket", "updated_at", "plant_id"], ["ticket_aud", "updated_at",
+          "plant_id"], ["ticket_label", "created_at", "plant_id"]]'
+        secret: true
+      image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-backup-util:4688e1258b1960370e35373e691b2b974662df28
+      name: data-backup
+      schedule: 30 18 1 * *
+    - args:
+        - /bin/sh
+        - -c
+        - python3 -m data_archive.main
+      env:
+        plaintext:
+          DB_HOST: replenishment-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+          DB_NAME: replenishment
+          DB_PORT: "5432"
+          TABLE_AND_TIME_AWARE_COLUMN_LIST: '[["part_stock_aud", "updated_at"], ["ticket_label",
+          "created_at"], ["ticket", "updated_at"], ["ticket_aud", "updated_at"]]'
+          THRESHOLD_DAYS: "31"
+        secret: true
+      image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-archive-util:4688e1258b1960370e35373e691b2b974662df28
+      name: data-archive
+      schedule: 30 18 2-31 * *
+env:
+  plaintext:
+    AUTHORIZATION_SERVICE_BASE_URI: http://authorization.ep
+    DB_HOST: replenishment-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+    DB_PORT: 5432
+    FLYWAY_LOCATIONS: classpath:migrations/common,classpath:migrations/ipms4
+    JAVA_TOOL_OPTIONS: '-XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80 -XX:+UseParallelGC
+      -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90 '
+    KAFKA_BROKER_SERVICE_URL: 172.31.188.208:9095,172.31.189.45:9095,172.31.189.173:9095
+    POSTGRES_AUTO_DDL: update
+externalSecret:
+  refreshInterval: "1h"
+  secretStoreName: aws-secretsmanager
+  data:
+    - secretKey: DB_NAME
+      remoteKey: ipms4/dev/replenishment
+      property: db_name
+    - secretKey: DB_PASSWORD
+      remoteKey: ipms4/dev/replenishment
+      property: db_password
+    - secretKey: DB_USERNAME
+      remoteKey: ipms4/dev/replenishment
+      property: db_username
+    - secretKey: SLACK_ALERTS_CHANNEL_NAME
+      remoteKey: ipms4/dev/replenishment
+      property: slack_alerts_channel_name
+    - secretKey: SLACK_APP_OAUTH_TOKEN
+      remoteKey: ipms4/dev/replenishment
+      property: slack_app_oauth_token
+kong:
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+  services:
+    - authn: basic-auth
+      name: replenishment-swagger
+      routes:
+        hosts:
+          - api.sadhan-ep-dev.tatamotors.com
+        paths:
+          - /replenishment-swagger
+        strip_path: "true"
+      service_path: /replenishment-swagger
+    - authn: oidc-auth
+      cors_allowed_origins:
+        - https://ekanban-config.sadhan-ep-dev.tatamotors.com
+        - https://ekanban.sadhan-ep-dev.tatamotors.com
+        - http://localhost:3000/
+      name: sadhan-config
+      read_timeout: 900
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: default-src ''none'''
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+      routes:
+        hosts:
+          - api.ekanban-config.sadhan-ep-dev.tatamotors.com
+          - api.sadhan-ep-dev.tatamotors.com
+        paths:
+          - /config
+        strip_path: "false"
+      service_path: /
+      user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+    - authn: oidc-auth
+      cors_allowed_origins:
+        - https://ekanban.sadhan-ep-dev.tatamotors.com
+        - https://production-broadcast.esakha-dev.tatamotors.com
+        - http://localhost:3000/
+      name: replenishment
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: default-src ''none'''
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+      routes:
+        hosts:
+          - api.ekanban.sadhan-ep-dev.tatamotors.com
+          - api.sadhan-ep-dev.tatamotors.com
+        paths:
+          - /replenishment
+        strip_path: "false"
+      service_path: /
+      user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+    - authn: oidc-auth
+      cors_allowed_origins:
+        - https://flowhouse.dev.tatamotors.com
+        - https://flowhouse.ep-dev.tatamotors.com
+        - https://production-broadcast.esakha-dev.tatamotors.com
+        - http://localhost:3000/
+      name: srs
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: default-src ''none'''
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+      routes:
+        hosts:
+          - api.flowhouse.dev.tatamotors.com
+        paths:
+          - /srs
+        strip_path: "false"
+      service_path: /
+      user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+  tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+replicaCount: 1
+resources:
+  limits:
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+service:
+  port: 80

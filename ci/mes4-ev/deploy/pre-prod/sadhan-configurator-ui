@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'mes4-ev/pre-prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'sadhan-configurator-ui'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/ep-sadhan-configurator-ui'
+    release_notes_slack_channel = 'ep-releases-pre-prod'
+    ecr_repo_name = 'ep-sadhan-configurator-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-sadhan-configurator-ui'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../info/pre-prod/what-is-running']
+}

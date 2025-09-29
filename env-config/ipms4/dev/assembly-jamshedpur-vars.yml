@@ -1,0 +1,10 @@
+replica_count: 1
+plant_name: "jamshedpur"
+db_host: assembly-plant-jsr-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+db_port: 5432
+assembly_plant_spring_profiles: dev,local,ipms4
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 300Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-jamshedpur
+assembly_plant_instancegroup: assembly-jamshedpur
+privileged_account_locking: true

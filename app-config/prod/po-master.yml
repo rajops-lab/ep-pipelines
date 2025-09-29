@@ -1,0 +1,49 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 10m
+    memory: 300Mi
+env:
+  plaintext:
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{po_master_db}}?ApplicationName=po-master'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    SUPPLIER_MASTER_SERVICE_BASE_URL: {{supplier_master_service_base_url}}
+    PURCHASE_ORDER_KATE_TOPIC: {{purchase_order_kate_topic}}
+    PURCHASE_ORDER_CHANGES_KATE_TOPIC: {{purchase_order_changes_kate_topic}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{po_master_db_username}}
+    POSTGRES_PASSWORD: {{po_master_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+hostAliases:
+  - ip: 172.31.32.36
+    hostnames:
+      - sap-ecc-private.api.tatamotors.com
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: po-master
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      routes:
+        paths:
+          - /po-master
+        strip_path: "true"

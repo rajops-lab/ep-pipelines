@@ -1,0 +1,25 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8080
+  monitoringPort: 8080
+env:
+  plaintext:
+    DB_USER: {{assembly_cloud_db_username}}
+    DB_HOST: {{rds_host}}
+    DB_PORT: {{rds_port}}
+    DB_NAME: {{assembly_cloud_db}}
+    DB_NAME_TEST: {{assembly_cloud_db}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+  secret:
+    DB_PASSWORD: {{assembly_cloud_db_password}}
+replicaCount: 1
+resources:
+  requests:
+    cpu: 10m
+    memory: 316Mi
+service:
+  port: 80

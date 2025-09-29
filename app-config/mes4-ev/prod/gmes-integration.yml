@@ -1,0 +1,37 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    memory: 400Mi
+env:
+  plaintext:
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SAP_CONNECTOR_RFC_BASE_URL: {{sap_connector_rfc_base_url}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    SFLT_FOR_TCF_MANDT_FIELD_VALUE: '{{sflt_for_tcf_mandt_field_value}}'
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{gmes_integration_db}}?ApplicationName=gmes-integration'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    FLYWAY_ENABLE: {{flyway_enable}}
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+    FLYWAY_BASELINE_ON_MIGRATE: {{flyway_baseline_on_migrate}}
+  secret:
+    POSTGRES_USERNAME: {{gmes_integration_db_username}}
+    POSTGRES_PASSWORD: {{gmes_integration_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80

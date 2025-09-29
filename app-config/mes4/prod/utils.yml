@@ -1,0 +1,49 @@
+---
+hostAliases:
+{% for kafka_ip in kafka_ips %}
+  - ip: {{ kafka_ip }}
+    hostnames:
+      - kafka-{{ loop.index }}
+{% endfor %}
+psql:
+  mounts:
+    secret:
+      - name: bash-rc
+        container: psql
+        target: /root/.bashrc
+        mode: "0700"
+        content: |
+          alias psql-ep-authorization-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{authorization_db}} --username={{authorization_db_username}}'
+          alias psql-ep-machine-integration-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{machine_integration_db}} --username={{machine_integration_db_username}}'
+          alias psql-ep-plant-master-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{plant_master_db}} --username={{plant_master_db_username}}'
+          alias psql-mes4-po-master-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{po_master_db}} --username={{po_master_db_username}}'
+      - name: pg-pass
+        container: psql
+        target: /root/.pgpass
+        mode: "0600"
+        content: |
+          {{rds_host}}:{{rds_port}}:{{authorization_db}}:{{authorization_db_username}}:{{authorization_db_password}}
+          {{rds_host}}:{{rds_port}}:{{machine_integration_db}}:{{machine_integration_db_username}}:{{machine_integration_db_password}}
+          {{rds_host}}:{{rds_port}}:{{plant_master_db}}:{{plant_master_db_username}}:{{plant_master_db_password}}
+          {{rds_host}}:{{rds_port}}:{{po_master_db}}:{{po_master_db_username}}:{{po_master_db_password}}
+mqttClient:
+  enabled: true
+  mounts:
+    secret:
+      - name: publisher-certificate.crt
+        container: mqtt-client
+        target: /publisher-certificate.crt
+        mode: "0444"
+        encodedContent: {{mqtt_publisher_crt}}
+      - name: publisher-private-key.key
+        container: mqtt-client
+        target: /publisher-private-key.key
+        mode: "0444"
+        encodedContent: {{mqtt_publisher_private_key}}
+      - name: publisher-public-key.key
+        container: mqtt-client
+        target: /publisher-public-key.key
+        mode: "0444"
+        encodedContent: {{mqtt_publisher_public_key}}
+ocClient:
+  enabled: true

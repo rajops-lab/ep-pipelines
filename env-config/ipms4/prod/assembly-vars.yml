@@ -1,0 +1,11 @@
+sap_client_id: 500
+replica_count: 1
+assembly_cloud_replica_count: 3
+kafka_hosts:
+  - kafka1
+  - kafka2
+  - kafka3
+assembly_cloud_spring_profiles: prod,ipms4
+booking_retry_interval_in_minutes: 15
+assembly_cloud_authorization_base_url: https://api.ipms4.tatamotors.com/authorization/assembly/
+cron_job_api_version: batch/v1

@@ -1,0 +1,72 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 3000
+  monitoringPort: 3000
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 150m
+    memory: 512Mi
+  limits:
+    memory: 3300Mi
+env:
+  plaintext:
+    ENV: {{SAMPRAWAH_ENVIRONMENT}}
+    DB_HOST: {{samprawah_dashboard_rds_host}}
+    READONLY_DB_HOST: {{READONLY_DB_HOST}}
+    DB_PORT: {{samprawah_dashboard_rds_port}}
+    READONLY_DB_PORT: {{samprawah_dashboard_rds_port}}
+    MLFLOW_TRACKING_URI: {{MLFLOW_TRACKING_URI}}
+    MLFLOW_EXPERIMENT_NAME: {{MLFLOW_EXPERIMENT_NAME}}
+    KEYCLOAK_URL: {{KEYCLOAK_URL_CHATBOT}}
+
+
+  secret:
+    DB_NAME: {{samprawah_dashboard_db}}
+    DB_USER: {{samprawah_dashboard_db_username}}
+    DB_PASSWORD: {{samprawah_dashboard_db_password}}
+    DJANGO_SECRET_KEY: {{DJANGO_SECRET_KEY_INVENTORY_COVERAGE}}
+    READONLY_DB_USER: {{READONLY_DB_USER}}
+    READONLY_DB_PASSWORD: {{READONLY_DB_PASSWORD}}
+    READONLY_DB_NAME: {{READONLY_DB_NAME}}
+    AWS_REGION: {{AWS_REGION}}
+    AWS_ACCESS_KEY_ID: {{AWS_ACCESS_KEY_ID}}
+    AWS_SECRET_ACCESS_KEY: {{AWS_SECRET_ACCESS_KEY}}
+    AWS_ANTHROPIC_MODEL_ID: {{AWS_ANTHROPIC_MODEL_ID}}
+    AWS_BEDROCK_EMBEDDING_MODEL_ID: {{AWS_BEDROCK_EMBEDDING_MODEL_ID}}
+    AWS_BEDROCK_LLM_MODEL_ID: {{AWS_BEDROCK_LLM_MODEL_ID}}
+    AWS_INFERENCE_PROFILE_ARN: {{AWS_INFERENCE_PROFILE_ARN}}
+    AWS_BEDROCK_MINI_LLM_MODEL_ID: {{AWS_BEDROCK_MINI_LLM_MODEL_ID}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: chatbot-service
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://scm-control-tower.{{samprawah_base_domain}}
+        - https://samprawah-dashboard.{{samprawah_base_domain}}
+        - ws://scm-control-tower.{{samprawah_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        hosts:
+          - api.samprawah-dashboard.{{samprawah_base_domain}}
+          - api.scm-control-tower.{{samprawah_base_domain}}
+        paths:
+          - /chatbot-service
+        strip_path: "true"

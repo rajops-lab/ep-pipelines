@@ -1,0 +1,84 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8080
+  monitoringPort: 8082
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+env:
+  plaintext:
+    DB_HOST: {{db_host}}
+    DB_PORT: {{db_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SPRING_PROFILES_ACTIVE: {{assembly_plant_spring_profiles}}
+    SAP_CONNECTOR_SERVICE_URL: {{sap_connector_service_url}}
+    CONSUMER_CLIENT_ID: {{kafka_assembly_plant_consumer_client_id}}
+    PLANT_LOCATION: {{plant_name}}
+    USER_ACCOUNT_LOCK_FEATURE_ENABLED: {{account_locking}}
+    PRIVILEGED_USER_ACCOUNT_LOCK_FEATURE_ENABLED: {{privileged_account_locking}}
+    ANY_ORDER_RECEIVE: {{any_order_receive}}
+  secret:
+    DB_NAME: {{assembly_plant_db}}
+    DB_USER: {{assembly_plant_db_username}}
+    DB_PASSWORD: {{assembly_plant_db_password}}
+replicaCount: {{replica_count}}
+resources:
+  limits:
+    cpu: 2500m
+  requests:
+    cpu: 1000m
+    memory: {{assembly_plant_memory_request}}
+priorityClassName: assembly-plant
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+            - key: kops.k8s.io/instancegroup
+              operator: In
+              values:
+                - {{assembly_plant_instancegroup}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: assembly-{{plant_name}}
+      service_path: /
+      cors_allowed_origins:
+        - {{local_development_domain}}
+        - https://configurator.{{ep_base_domain}}
+        - https://assembly-support.{{ep_base_domain}}
+        - https://tauri.localhost
+{% if nirmaan_base_domain is defined %}
+        - https://assembly-{{plant_name}}.{{nirmaan_base_domain}}
+{% else %}
+        - https://assembly-{{plant_name}}.{{ep_base_domain}}
+{% endif %}
+        - tauri://localhost
+        - null
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: script-src ''self'' https://*.tatamotors.com; worker-src ''self'' https://*.tatamotors.com blob:; script-src-elem ''self'' https://cdnjs.cloudflare.com https://*.tatamotors.com'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      routes:
+        preserve_host: "true"
+        hosts:
+{% if nirmaan_base_domain is defined %}
+          - assembly-{{plant_name}}.{{nirmaan_base_domain}}
+{% else %}
+          - assembly-{{plant_name}}.{{ep_base_domain}}
+{% endif %}

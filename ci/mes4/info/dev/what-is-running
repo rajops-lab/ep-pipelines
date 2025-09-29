@@ -1,0 +1,9 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+whatIsRunning {
+    kubeconfig_credential = 'ep-kube-config'
+    namespace = 'mes4'
+    chart = 'ep-app-0.1.0'
+}

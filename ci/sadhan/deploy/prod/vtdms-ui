@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'mes4/prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'vtdms-ui'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/pv-vtdms-frontend-app'
+    release_notes_slack_channel = 'ep-releases-prod'
+    ecr_repo_name = 'pv-vtdms-frontend-app'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/pv-vtdms-frontend-app'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../../info/prod/what-is-running']
+    }

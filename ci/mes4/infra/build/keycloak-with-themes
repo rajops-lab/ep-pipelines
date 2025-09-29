@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDocker {
+    code_repo = 'https://github.com/tmlconnected/ep-infrastructure.git'
+    docker_file_dir = 'docker/keycloak-with-themes'
+    ecr_repo_name = 'ep-keycloak-with-themes'
+    ecr_repo = '604787949310.dkr.ecr.ap-south-1.amazonaws.com/ep-keycloak-with-themes'
+    image_tag = 'ep-keycloak-with-themes:latest'
+    aws_ecr_base_url = 'https://604787949310.dkr.ecr.ap-south-1.amazonaws.com'
+}

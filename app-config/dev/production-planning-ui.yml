@@ -1,0 +1,61 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 3Mi
+  limits:
+    memory: 7Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.{{ep_base_domain}}",
+          AUTH_ENDPOINT: "{{central_keycloak_base_url}}/auth",
+          ENV_TYPE: "TEST",
+          PRODUCTION_MASTER_DATA_UI_URL: "https://production-master-data.{{ep_base_domain}}",
+          HOME_UI_BASE_URL: "https://home.{{ep_base_domain}}",
+          APPLICATION_VARIANT: "ipms4",
+          SPAR_Q_PLUG_BASE_URL:"https://cvmanu.infoportal.tatamotors.com/azure/mes/server/index.php",
+          AGGREGATE_STATUS : "true"
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "{{central_keycloak_realm}}",
+          "auth-server-url": "{{central_keycloak_base_url}}/auth/",
+          "ssl-required": "all",
+          "resource": "avantgarde-production-planning-cv",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: production-planning-ui
+      authn: none
+      cors_allowed_origins:
+        - https://planning.{{ep_base_domain}}
+      response_transformers:
+        - 'X-Frame-Options:SAMEORIGIN'
+        - 'Permissions-Policy:geolocation=();camera=();microphone=()'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - planning.{{ep_base_domain}}
+        preserve_host: "true"

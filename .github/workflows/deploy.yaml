@@ -1,0 +1,54 @@
+name: Update Image Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+      application:
+        description: 'Application to update'
+        required: true
+        type: choice
+        options:
+          - assembly-cloud
+          - replenishment
+      new_image_tag:
+        description: 'Image tag'
+        required: true
+        type: string
+
+jobs:
+  update-image:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update image tag
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq -i '.app.tag = "${{ inputs.new_image_tag }}"' "argocd/deploy/ipms4/${{ inputs.environment }}/${{ inputs.application }}/values.yaml"
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "update-image-tag-${{ github.event.inputs.application }}-${{ github.event.inputs.new_image_tag }}"
+          git add .
+          git commit -m "Update image tag for ${{ github.event.inputs.application }}" || echo "No changes to commit"
+          git push -u origin "update-image-tag-${{ github.event.inputs.application }}-${{ github.event.inputs.new_image_tag }}"
+
+      - name: Raise pull request
+        run: |
+          gh pr create \
+            --base master \
+            --head "update-image-tag-${{ github.event.inputs.application }}-${{ github.event.inputs.new_image_tag }}" \
+            --title "Update image tag for ${{ github.event.inputs.application }}" \
+            --body "This PR updates the image tag for ${{ github.event.inputs.application }} to ${{ github.event.inputs.new_image_tag }}." \
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

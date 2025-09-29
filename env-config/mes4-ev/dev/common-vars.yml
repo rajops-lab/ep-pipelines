@@ -1,0 +1,45 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: avant-garde-mes4-ev-dev.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+postgres_connection_pool: 5
+ep_base_domain: mes4-ev-dev.tatamotors.com
+api_host_base: https://api.mes4-dev.tatamotors.com
+bom_service_base_url: http://bom-service.avant-garde
+kafka_ips:
+  - 172.16.234.110
+  - 172.16.234.252
+  - 172.16.234.170
+kafka_port: 9095
+keycloak_base_url: https://auth.ep-dev.tatamotors.com
+keycloak_realm: enterprise
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+keycloak_user_info_endpoint: https://auth.ep-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+sadhan_keycloak_user_info_endpoint: https://auth.sadhan-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+application_variant: mes4-ev
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+dns:
+  nameservers:
+    - 172.31.16.55
+    - 172.31.16.57
+  searches:
+    - tmindia.tatamotors.com
+ca_connector_service_url: http://configurator.assembly
+sap_connector_service_url: http://sap-connector.assembly
+sap_raw_bom_bucket_location: tml-mes4-ev-dev-sap-raw-bom
+aws_region: ap-south-1
+assembly_cloud_url: http://assembly-cloud.assembly
+local_development_domain: http://localhost:3000/
+digital_twin_token_url: https://auth.ipms4.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/token
+digital_twin_line_url: https://api.mes4-ev.tatamotors.com/plant-master/lines?includeRelations=true
+esakha_base_domain: esakha-dev.tatamotors.com
+digital_twin_env: "TEST"
+keycloak_realm_digital_twin: udyog
+client_id: digital-twin
+keycloak_base_url_digital_twin: https://qa.sso.tatamotors.com

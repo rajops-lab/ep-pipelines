@@ -1,0 +1,40 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8181
+  monitoringPort: 8181
+  livenessProbe: /health
+  readinessProbe: /health
+replicaCount: {{opa_replica_count}}
+resources:
+  requests:
+    cpu: {{opa_cpu_request}}
+    memory: {{opa_memory_request}}
+  limits:
+    cpu: {{opa_cpu_limit}}
+    memory: {{opa_memory_limit}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-management-opa
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      connect_timeout: 120
+      write_timeout: 120
+      read_timeout: 120
+      cors_allowed_origins:
+        - https://asset-management.{{fractal_base_domain}}
+        - https://api.mes4-dev.tatamotors.com
+        - https://api.asset-management.esakha-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /opa
+        strip_path: "true"

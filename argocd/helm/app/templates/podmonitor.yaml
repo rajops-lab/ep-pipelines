@@ -1,0 +1,23 @@
+{{- if and .Values.podmonitor .Values.podmonitor.endpoints -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  namespace: {{ include "app.namespace" . }}
+  name: {{ include "app.name" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    {{- with .Values.podmonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  podMetricsEndpoints:
+    {{- range .Values.podmonitor.endpoints }}
+    - honorLabels: {{ .honor_labels | default "true" }}
+      interval: {{ .interval | default "30s" }}
+      targetPort: {{ .monitoringPort | default "monitoring" }}
+      path: {{ .path }}
+    {{- end}}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+{{- end }}

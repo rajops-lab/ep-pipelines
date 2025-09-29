@@ -1,0 +1,5 @@
+/.idea/
+/env-config/**/ansible-vault-pass
+*.iml
+lib/
+*.DS_Store

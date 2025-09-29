@@ -1,0 +1,10 @@
+replica_count: 1
+kafka_ips:
+  - 172.31.188.208
+  - 172.31.189.45
+  - 172.31.189.173
+kafka_port: 9095
+sap_raw_bom_bucket_location: ""
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90

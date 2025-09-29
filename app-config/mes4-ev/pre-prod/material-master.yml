@@ -1,0 +1,73 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 250Mi
+  limits:
+    memory: 490Mi
+env:
+  plaintext:
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{material_master_db}}?ApplicationName=material-master'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    API_SERVER_URL: 'https://api.{{ep_base_domain}}/material-master'
+    SAP_CONNECTOR_RFC_BASE_URL: {{sap_connector_rfc_base_url}}
+    MATERIAL_KATE_TOPIC: {{material_kate_topic}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    USE_FIXED_BOM: 'true'
+  secret:
+    POSTGRES_USERNAME: {{material_master_db_username}}
+    POSTGRES_PASSWORD: {{material_master_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: material-master
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://production-master-data.{{ep_base_domain}}
+        - https://planning.{{ep_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /material-master
+        strip_path: "true"
+    - name: material-master-swagger
+      authn: basic-auth
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /swagger-ui
+      routes:
+        paths:
+          - /material-master-swagger
+        strip_path: "true"

@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-push-notification.git'
+    ecr_repo_name = 'ep-push-notification'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-push-notification'
+    image_tag = 'ep-push-notification:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/push-notification']
+}

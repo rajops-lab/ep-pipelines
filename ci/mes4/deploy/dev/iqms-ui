@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'mes4/dev'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'iqms-ui'
+    namespace = 'mes4'
+    github_repo = 'tmlconnected/iqms-ui'
+    release_notes_slack_channel = 'ep-releases-dev'
+    ecr_repo_name = 'iqms-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/iqms-ui'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../info/dev/what-is-running']
+}

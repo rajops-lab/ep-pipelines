@@ -1,0 +1,78 @@
+app:
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-assembly-cloud
+  livenessProbe: /actuator/health/liveness
+  monitoringPort: 9082
+  port: 8080
+  readinessProbe: /actuator/health/readiness
+  tag: "d857788c510bf457cee57b8378bb0d5d049a71fe"
+buildInfo:
+  ecr_repo_name: ep-assembly-cloud
+  github_repo_name: tmlconnected/ep-assembly-root
+cronjobs:
+  apiVersion: batch/v1
+  http:
+    - context: support/re-trigger/stuck-tasks
+      headers:
+        Accept: application/json
+      method: POST
+      name: re-trigger-unfinished-tasks
+      schedule: 0 */3 * * *
+env:
+  plaintext:
+    AUTHORIZATION_SERVICE_BASE_URI: https://api.ep-dev.tatamotors.com/authorization/assembly/
+    BOOKING_RETRY_INTERVAL_IN_MINUTES: 15
+    CA_SERVICE_URL: http://configurator.assembly
+    DB_HOST: enterprise-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+    DB_PORT: 5432
+    JAVA_TOOL_OPTIONS: '-XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90'
+    KAFKA_BROKER_SERVICE_URL: kafka1:9095,kafka2:9095,kafka3:9095
+    SAP_CONNECTOR_SERVICE_URL: http://sap-connector.assembly
+    SPRING_PROFILES_ACTIVE: local,dev,ipms4
+externalSecret:
+  refreshInterval: "1h"
+  secretStoreName: aws-secretsmanager
+  data:
+    - secretKey: DB_NAME
+      remoteKey: ipms4/dev/assembly-cloud
+      property: db_name
+    - secretKey: DB_PASSWORD
+      remoteKey: ipms4/dev/assembly-cloud
+      property: db_password
+    - secretKey: DB_USER
+      remoteKey: ipms4/dev/assembly-cloud
+      property: db_user
+kong:
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+  services:
+    - authn: oidc-auth
+      cors_allowed_origins:
+        - http://assembly-cloud.assembly.ep-dev.tatamotors.com
+        - https://assembly-support.ep-dev.tatamotors.com
+        - http://localhost:3000/
+      name: assembly-support
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: default-src ''none'''
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+      routes:
+        paths:
+          - /assembly/support
+        strip_path: "true"
+      service_path: /support
+      user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+  tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+replicaCount: 1
+resources:
+  limits:
+    memory: 1Gi
+  requests:
+    cpu: 50m
+    memory: 425Mi
+service:
+  port: 80

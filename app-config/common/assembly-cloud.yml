@@ -1,0 +1,69 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8080
+  monitoringPort: 9082
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+env:
+  plaintext:
+    DB_HOST: {{rds_host}}
+    DB_PORT: {{rds_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_host in kafka_hosts %}{{kafka_host}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SPRING_PROFILES_ACTIVE: {{assembly_cloud_spring_profiles}}
+    SAP_CONNECTOR_SERVICE_URL: {{sap_connector_service_url}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    CA_SERVICE_URL: {{ca_connector_service_url}}
+    BOOKING_RETRY_INTERVAL_IN_MINUTES: {{booking_retry_interval_in_minutes}}
+    AUTHORIZATION_SERVICE_BASE_URI: {{assembly_cloud_authorization_base_url}}
+  secret:
+    DB_NAME: {{assembly_cloud_db}}
+    DB_USER: {{assembly_cloud_db_username}}
+    DB_PASSWORD: {{assembly_cloud_db_password}}
+replicaCount: {{assembly_cloud_replica_count}}
+resources:
+  requests:
+    cpu: 50m
+    memory: 425Mi
+  limits:
+    memory: 1Gi
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: assembly-support
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /support
+      cors_allowed_origins:
+        - http://assembly-cloud.assembly.{{ep_base_domain}}
+        - https://assembly-support.{{ep_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /assembly/support
+        strip_path: "true"
+cronjobs:
+  apiVersion: {{cron_job_api_version}}
+  http:
+    - name: re-trigger-unfinished-tasks
+      schedule: '0 * * * *'
+      method: POST
+      context: support/re-trigger/failed-waiting-tasks
+      headers:
+        Accept: "application/json"

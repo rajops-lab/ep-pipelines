@@ -1,0 +1,106 @@
+tml_nameserver: 172.31.16.55
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: enterprise-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+backup_duration: 1
+backup_from_last_n_months: 1
+day_of_the_month: 1
+purge_duration: 1
+purge_from_last_n_months: 1
+day_of_the_month_for_purging: 10
+postgres_auto_ddl: update
+postgres_connection_pool: 5
+sadhan_base_domain: sadhan-ep-dev.tatamotors.com
+sadhan_pv_base_domain: sadhan-pv-dev.tatamotors.com
+sadhan_ev_base_domain: sadhan-ev-dev.tatamotors.com
+ep_base_domain: ep-dev.tatamotors.com
+samprawah_base_domain: ep-dev.tatamotors.com
+esakha_base_domain: esakha-dev.tatamotors.com
+esakha_pv_base_domain: esakha-pv-dev.tatamotors.com
+keycloak_qa_base_url: test
+ENV: IPMS
+api_host_base: https://api.ep-dev.tatamotors.com
+bom_service_base_url: http://bom-service.avant-garde
+kafka_ips:
+  - 172.31.188.208
+  - 172.31.189.45
+  - 172.31.189.173
+kafka_port: 9095
+keycloak_base_url: https://auth.ep-dev.tatamotors.com
+keycloak_realm: enterprise
+keycloak_user_info_endpoint: https://auth.ep-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+client_id: digital-twin
+keycloak_base_url_digital_twin: https://auth.ep-dev.tatamotors.com
+keycloak_realm_digital_twin: enterprise
+keycloak_user_info_endpoint_digital_twin: https://auth.ep-dev.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+digital_twin_env: "TEST"
+
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+email_notification_allowed_domains: vishleshan.net,sahaj.ai, tatamotors.com
+email_notification_region: ap-south-1
+dharwad_exploded_bom_enable: true
+plant_ids:
+  - 1500
+application_variant: ipms4
+production_planning_db: enterprise_dev
+production_planning_db_username: serviceid_rw
+ipms_host:
+  pune: tmlipmsd
+  jamshedpur: tmlipmsd
+  lucknow: tmlipmsd
+  dharwad: tmlipmsd
+ipms_client_id:
+  pune: 100
+  jamshedpur: 110
+  lucknow: 120
+  dharwad: 130
+
+plat_aggregate_genealogy:
+  pune: ZPRFC_ZBLD_AGR_SCN_AG_DATA_UPD
+  jamshedpur: ZJRFC_ZBLD_AGR_SCN_AG_DATA_UP
+  lucknow: ZLRFC_ZBLD_AGR_SCN_AG_DATA_UPD
+  dharwad: ZDRFC_ZBLD_AGR_SCN_AG_DATA_UPD
+plant_ddms_rfc:
+  pune: ZPRFC_ZDDMS_T_FSO_ST
+  jamshedpur: ZJRFC_ZDDMS_T_FSO_ST
+  lucknow: ZLRFC_ZDDMS_T_FSO_ST
+  dharwad: ZDRFC_ZDDMS_T_FSO_ST
+
+plant_chassis_geneology:
+  pune: ZLRFC_ZBUILD_AGGR_SCAN_DATA_UP
+  jamshedpur: ZJRFC_ZBUILD_AGGR_SCAN_DATA
+  lucknow: ZLRFC_ZBUILD_AGGR_SCAN_DATA_UP
+  dharwad: ZLRFC_ZBUILD_AGGR_SCAN_DATA_UP
+
+dns:
+  nameservers:
+    - 172.31.16.55
+  searches:
+    - tmindia.tatamotors.com
+
+ipms_dns:
+  nameservers:
+    - 172.27.128.60
+  searches:
+    - tmindia.tatamotors.com
+ipms_connector_build_card_enabled_plants: 2001,3001,1500
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+
+ca_connector_service_url: http://configurator.assembly
+sap_connector_service_url: http://sap-connector.assembly
+sap_raw_bom_bucket_location: tml-cv-dev-sap-raw-bom
+aws_region: ap-south-1
+assembly_cloud_url: http://assembly-cloud.assembly
+application_instancegroup: nodes
+local_development_domain: http://localhost:3000/
+account_locking: false
+privileged_account_locking: false
+any_order_receive: false
+cron_job_api_version: batch/v1

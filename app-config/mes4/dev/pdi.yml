@@ -1,0 +1,61 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 300Mi
+  limits:
+    memory: 512Mi
+env:
+  plaintext:
+    DATABASE_PORT : {{rds_port}}
+
+  secret:
+    DATABASE_NAME : {{pv_vtdms_master_db}}
+    DATABASE_USER : {{pv_vtdms_db_username}}
+    DATABASE_PASSWORD : {{pv_vtdms_db_password}}
+    DATABASE_HOST : {{rds_host_vtdms}}
+    POSTGRES_AUTO_DDL: validate
+    KEYCLOAK_URL: {{keycloak_user_info_endpoint}}
+    SERVER_URL: {{server_url}}
+    CLIENT_ID: {{client_id}}
+    REALM_NAME: {{realm_name}}
+    RESOURCE_ID: {{resources_id}}
+    SECRET_KEY: {{secret_key}}
+    AUTHORIZATION: {{authorization}}
+    TOKEN_AUTHORIZATION: {{token_authorization}}
+    ENCRYPTION_DECRYPTION_KEY: {{encryption_decryption_key}}
+    MES_BASIC_TOKEN: {{ MES_BASIC_TOKEN }}
+    AWS_SECRET_ACCESS_KEY_ID: {{aws_secret_access_key_id}}
+    AWS_SECRET_ACCESSS_KEY: {{aws_secret_access_key}}
+    REGION_NAME: {{region_name}}
+    S3_BUCKET_NAME: {{s3_bucket_name}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: pdi
+      service_path: /
+      cors_allowed_origins:
+        - http://api.mes4-dev.tatamotors.com/
+        - https://pdi.sadhan-pv-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /pdi
+        strip_path: "true"

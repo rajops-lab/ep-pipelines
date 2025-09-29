@@ -1,0 +1,41 @@
+replenishment_rds_host: replenishment-mes4-ev-prod.ciqnpttaibiw.ap-south-1.rds.amazonaws.com
+replenishment_rds_port: 5432
+replenishment_db: replenishment
+replenishment_db_username: replenishment_rw
+memory_request: 1024Mi
+cpu_request: 100m
+memory_limit: 2048Mi
+replica_count: 3
+cron_job_api_version: batch/v1
+postgres_auto_ddl: update
+flyway_locations: classpath:migrations/common,classpath:migrations/mes4-ev
+replenishment_app_name: replenishment
+sadhan_base_domain: sadhan-ev.tatamotors.com
+sadhan_authorization_base_url: http://authorization.mes4
+keycloak_base_url: https://auth.sadhan.tatamotors.com
+keycloak_user_info_endpoint: https://auth.sadhan.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+local_development_domain: http://localhost:3000/
+replenishment_data_dump_bucket: sadhan-replenishment-mes4-ev-prod-data-backup
+data_dump_schedule: '0 22 * * *'
+replenishment_dashboard_db: replenishment-dashboard
+replenishment_dashboard_db_username: replenishment_dashboard_rw
+replenishment_dashboard_kafka_group_id: replenishment
+replenishment_ticket_kafka_topic: replenishment.ticket-v1
+replenishment_dashboard_debug_mode: False
+replenishment_bucket_path: sadhan/replenishment
+vendor_wise_replenishment_requirement_topic: production-broadcast.vendor-wise-replenishment-material-requirements-v1
+replenishment_mhe_eta_path: sadhan/master_data/MHE_ETA_TIME_REPLENISHMENT.json
+kafka_secret_protocol: SSL
+kafka_ca_cert_path: sadhan/master_data/CA_CERT.pem
+local_kafka_ca_cert_path: /tmp/CA_CERT.pem
+local_key_file: /tmp/replenishment-dashboard.sadhan-ev.tatamotors.com.key.txt
+local_client_cert_path: /tmp/client_cert.pem
+kafka_client_cert_path: sadhan/master_data/client_cert.pem
+replenishment_s3_ssh_key_file_path: sadhan/master_data/replenishment-dashboard.sadhan-ev.tatamotors.com.key.txt
+cv_kafka_ips:
+  - 172.31.190.122
+  - 172.31.190.137
+  - 172.31.191.70
+cv_kafka_port: 9092
+srs_base_domain: flowhouse.tatamotors.com
+srs_base_domain_ui: flowhouse.tatamotors.com

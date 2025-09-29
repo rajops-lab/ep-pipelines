@@ -1,0 +1,46 @@
+replicaCount: 1
+kind: Deployment
+app:
+  image: nginx
+  tag: latest
+  port: 80
+  monitoringPort: 80
+  livenessProbe: /
+  livenessDelaySeconds: 20
+  readinessProbe: /
+  readinessDelaySeconds: 20
+image:
+  pullPolicy: IfNotPresent
+resources:
+  requests:
+    cpu: 50m
+    memory: 100Mi
+podmonitor:
+  labels:
+    release: kube-prometheus-stack
+  endpoints:
+    - honor_labels: true
+      interval: 10s
+      path: /
+response_transformers:
+  - 'Cache-Control: no-cache'
+  - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+  - 'X-Content-Type-Options: nosniff'
+  - 'X-XSS-Protection: 1; mode=block'
+  - 'X-Frame-Options: SAMEORIGIN'
+  - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+  - 'Referrer-Policy: no-referrer'
+remove_headers:
+  - 'Server'
+kong:
+  name: kong-kong-admin
+  namespace: kong
+  port: 8001
+  command: kong-configure
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+cronjobs:
+  http: []
+  apiVersion: batch/v1

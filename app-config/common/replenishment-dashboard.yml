@@ -1,0 +1,72 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8000
+  monitoringPort: 8000
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: {{cpu_request}}
+    memory: {{memory_request}}
+  limits:
+    memory: {{memory_limit}}
+env:
+  plaintext:
+    DB_HOST: {{replenishment_rds_host}}
+    DB_PORT: {{replenishment_rds_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KEYCLOAK_URL: {{central_keycloak_user_info_endpoint}}
+    DIGITAL_TWIN_TOKEN_URL: {{digital_twin_token_url}}
+    DIGITAL_TWIN_LINE_URL: {{digital_twin_line_url}}
+    AWS_REGION_NAME: {{aws_region}}
+    AWS_BUCKET_NAME: {{replenishment_data_dump_bucket}}
+    DEBUG_MODE: {{replenishment_dashboard_debug_mode}}
+    KAFKA_GROUP_ID_TICKET: {{replenishment_dashboard_kafka_group_id}}
+    KAFKA_TICKET_TOPIC: {{replenishment_ticket_kafka_topic}}
+    S3_BUCKET_PATH: {{replenishment_bucket_path}}
+    KAFKA_SUPPLIER_TOPIC: {{vendor_wise_replenishment_requirement_topic}}
+    MHE_ETA_PATH: {{replenishment_mhe_eta_path}}
+    SECURITY_PROTOCOL: {{kafka_secret_protocol}}
+    CA_CERT_S3_KEY: {{kafka_ca_cert_path}}
+    LOCAL_CA_CERT_PATH: {{local_kafka_ca_cert_path}}
+    CLIENT_CERT: {{kafka_client_cert_path}}
+    LOCAL_KEY_FILE: {{local_key_file}}
+    LOCAL_CLIENT_CERT_PATH: {{local_client_cert_path}}
+    S3_SSH_KEY_FILE: {{replenishment_s3_ssh_key_file_path}}
+    KAFKA_BROKER_SERVICE_URL_SUPPLIER: '{% for cv_kafka_ip in cv_kafka_ips %}{{cv_kafka_ip}}:{{cv_kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+  secret:
+    DB_NAME: {{replenishment_dashboard_db}}
+    DB_USER: {{replenishment_dashboard_db_username}}
+    DB_PASSWORD: {{replenishment_dashboard_db_password}}
+    SLACK_ALERTS_CHANNEL_NAME: {{replenishment_slack_alert_channel_name}}
+    SLACK_APP_OAUTH_TOKEN: {{replenishment_slack_app_oauth_token}}
+    AWS_ACCESS_KEY: {{aws_access_key}}
+    AWS_SECRET_KEY: {{aws_secret_key}}
+    DIGITAL_TWIN_TOKEN_URL_BODY: {{digital_twin_token_url_body}}
+    SECRET_KEY: {{replenishment_dashboard_secret_key}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: replenishment-dashboard
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://replenishment-dashboard.{{sadhan_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /replenishment-dashboard
+        strip_path: "true"

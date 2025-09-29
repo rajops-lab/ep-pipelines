@@ -1,0 +1,2 @@
+List resources in this release using:
+kubectl --namespace {{ include "app.namespace" . }} get all,secrets --selector "ep.tatamotors.com/app={{ include "app.name" . }}"

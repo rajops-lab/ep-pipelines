@@ -1,0 +1,44 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 230Mi
+  limits:
+    memory: 322Mi
+env:
+  plaintext:
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KAFKA_MACHINE_RAW_NON_SERIAL_DATA_TOPIC: 'machine-raw-non-serial-data-v1'
+    KAFKA_MACHINE_RAW_SERIAL_DATA_TOPIC: 'machine-raw-serial-data-v1'
+    MQTT_BROKER_TYPE: 'aws'
+    MQTT_ENDPOINT: 'a3o3po200m84wg-ats.iot.ap-south-1.amazonaws.com'
+    MQTT_NON_SERIAL_CLIENT_ID: 'ep-mqtt-machine-non-serial-data-listener-dev'
+    MQTT_SERIAL_CLIENT_ID: 'ep-mqtt-machine-serial-data-listener-dev'
+    MQTT_NON_SERIAL_TOPIC_BASE: 'non-serial-data'
+    MQTT_SERIAL_TOPIC_BASE: 'serial-data'
+    MQTT_CERTIFICATE_FILE: '/mqtt-certs/certificate.pem.crt'
+    MQTT_PRIVATE_KEY_FILE: '/mqtt-certs/private-key.pem.key'
+    MQTT_PERSISTENT_CONNECTION: 'false'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    ENABLE_AWS_IOT_CORE_TO_KAFKA: false
+mounts:
+  secret:
+    - name: mqtt-client-certificate
+      target: /mqtt-certs/certificate.pem.crt
+      encodedContent: {{mqtt_client_certificate}}
+    - name: mqtt-client-private-key
+      target: /mqtt-certs/private-key.pem.key
+      encodedContent: {{mqtt_client_private_key}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus

@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-replenishment-ui.git'
+    ecr_repo_name = 'ep-replenishment-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-replenishment-ui'
+    image_tag = 'ep-replenishment-ui:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../../common/deploy/dev/ep-home-ui']
+}

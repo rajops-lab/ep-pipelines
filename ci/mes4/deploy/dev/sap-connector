@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    name = 'sap-connector'
+    application_file = 'common/sap-connector.yml'
+    context_environment = 'mes4/dev'
+    vars = 'common-vars.yml'
+    custom_vars = 'assembly-vars.yml'
+    vault_vars = 'assembly-vault.yml'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    namespace = 'assembly'
+    github_repo = 'tmlconnected/ep-sap-connector'
+    ecr_repo_name = 'ep-sap-connector'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    release_notes_slack_channel = 'ep-releases-dev'
+    downstream_jobs = ['../../info/dev/what-is-running']
+}

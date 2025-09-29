@@ -1,0 +1,12 @@
+replica_count: 1
+plant_name: "jlr-panapakkam"
+db_host: assembly-plant-jlr-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+db_port: 5432
+assembly_plant_spring_profiles: dev,local,mes4
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 512Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-jlr-panapakkam
+assembly_plant_instancegroup: assembly-jlr-panapakkam
+privileged_account_locking: true
+account_locking: true
+any_order_receive: true

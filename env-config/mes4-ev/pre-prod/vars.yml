@@ -1,0 +1,60 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+ep_base_domain: mes4-ev-pre-prod.tatamotors.com
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+sadhan_base_domain: sadhan-ev-pre-prod.tatamotors.com
+esakha_base_domain: esakha-pre-prod-pv.tatamotors.com
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+rds_host: avant-garde-mes4-ev-pre-prod.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+authorization_db: authorization
+authorization_db_username: authorization_rw
+postgres_connection_pool: 5
+sap_connector_rfc_base_url: http://sap-connector.assembly
+sflt_for_tcf_mandt_field_value: 612
+gmes_integration_db: gmes_integration
+gmes_integration_db_username: gmes_integration_rw
+flyway_enable: true
+flyway_locations: classpath:migration/db/common,classpath:migration/db/mes4-ev
+flyway_baseline_on_migrate: false
+kafka_ips:
+  -10.164.56.10
+  -10.164.56.80
+  -10.164.56.109
+kafka_port: 9095
+production_planning_db: planning_pre_prod
+production_planning_db_username: planning_pre_prod_rw
+sanand_exploded_bom_enable: true
+plant_ids:
+  - 5201
+local_development_domain: http://localhost:3000/
+po_master_db: po_master
+supplier_master_service_base_url: http://material-master.mes4
+purchase_order_kate_topic: pv.kate.po-master-v1
+purchase_order_changes_kate_topic: pv.kate.po-master-changes-v1
+po_master_db_username: po_master_rw
+plant_master_db: plant_master
+plant_master_db_username: plant_master_rw
+postgres_auto_ddl: update
+material_master_db: material_master_pre_prod
+material_master_db_username: material_master_pre_prod_rw
+material_kate_topic: pv.kate.material-master-v1
+machine_integration_db: machine_integration
+machine_integration_db_username: machine_integration_rw
+esakha_rds_host: replenishment-mes4-ev-pre-prod.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+reconciliation_db: reconciliation
+reconciliation_db_username: reconciliation_rw
+email_notification_sender_email: no-reply@esakha-dev.tatamotors.com
+email_notification_bsl_group_email: ep-esakha-dev+bslgroup@sahaj.ai,ess527162@tatamotors.com
+email_notification_application_url: https://recon.esakha-dev-pv.tatamotors.com/
+email_notification_allowed_domains: vishleshan.net,sahaj.ai, tatamotors.com
+email_notification_region: ap-south-1
+cron_job_api_version: batch/v1
+central_keycloak_user_info_endpoint_external: https://qa.sso.tatamotors.com/auth/realms/Service/protocol/openid-connect/userinfo
+esakha_authorization_db: esakha_authorization
+esakha_authorization_db_username: esakha_authorization_rw
+avantgarde_base_domain: mes4-ev-pre-prod.tatamotors.com

@@ -1,0 +1,19 @@
+replenishment_rds_host: replenishment-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+replenishment_rds_port: 5432
+replenishment_db: replenishment
+replenishment_db_username: replenishment_rw
+memory_request: 512Mi
+cpu_request: 500m
+memory_limit: 1024Mi
+replica_count: 1
+cron_job_api_version: batch/v1
+postgres_auto_ddl: update
+flyway_locations: classpath:migrations/common,classpath:migrations/ipms4
+replenishment_app_name: ekanban
+sadhan_base_domain: sadhan-ep-dev.tatamotors.com
+sadhan_authorization_base_url: http://authorization.ep
+# TODO: cronjob scheduled to never run, change the bucket name & schedule when cronjob is needed
+replenishment_data_dump_bucket: sadhan-replenishment-ep-dev-data-backup
+data_dump_schedule: '0 22 31 2 *'
+srs_base_domain: flowhouse.dev.tatamotors.com
+srs_base_domain_ui: flowhouse.ep-dev.tatamotors.com

@@ -1,0 +1,48 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 470Mi
+  limits:
+    memory: 658Mi
+env:
+  plaintext:
+  secret:
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: issue-report
+      authn: none
+      service_path: /
+      cors_allowed_origins:
+        - https://api.ep-dev.tatamotors.com
+        - https://planning.ep-dev.tatamotors.com/
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /issue-report
+        strip_path: "true"
+    - name: issue-report-swagger
+      authn: none
+      service_path: /swagger-ui
+      routes:
+        paths:
+          - /issue-report-swagger
+        strip_path: "true"

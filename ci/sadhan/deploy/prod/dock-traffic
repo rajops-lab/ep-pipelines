@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    context_environment = 'ipms4/prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    name = 'dock-traffic-backend'
+    application_file = 'ipms4/prod/dock-traffic-backend.yml'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/dock-management-backend'
+    release_notes_slack_channel = 'ep-releases-prod'
+    ecr_repo_name = 'dock-traffic-mgmt-backend-service'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../../info/prod/what-is-running']
+    custom_vars = 'dock-traffic-mgmt-vars.yml'
+    vault_vars = 'dock-traffic-mgmt-vault.yml'
+    vars = 'common-vars.yml'
+}

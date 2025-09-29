@@ -1,0 +1,55 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: avant-garde-mes4-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+authorization_db: authorization
+authorization_db_username: authorization_rw
+machine_integration_db: machine_integration
+machine_integration_db_username: machine_integration_rw
+plant_master_db: plant_master
+plant_master_db_username: plant_master_rw
+production_planning_db: planning_dev
+production_planning_db_username: planning_rw
+material_master_db: material_master_dev
+material_master_db_username: material_master_rw
+postgres_connection_pool: 5
+postgres_auto_ddl: update
+flyway_enable: true
+flyway_locations: classpath:migration/db/common,classpath:migration/db/mes4
+flyway_baseline_on_migrate: false
+ep_base_domain: mes4-dev.tatamotors.com
+kafka_ips:
+  - 172.16.108.104
+  - 172.16.108.136
+  - 172.16.108.225
+kafka_port: 9095
+keycloak_base_url: https://qa.sso.tatamotors.com
+keycloak_realm: udyog
+keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+local_development_domain: http://localhost:3000/
+sap_connector_rfc_base_url: http://sap-connector.assembly
+supplier_master_service_base_url: http://material-master.mes4
+material_kate_topic: pv.kate.material-master-v1
+po_master_db: po_master
+purchase_order_kate_topic: pv.kate.po-master-v1
+purchase_order_changes_kate_topic: pv.kate.po-master-changes-v1
+default_java_flags: -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+sflt_for_tcf_mandt_field_value: 350
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+client_id: avantgarde-digital-twin-pv
+sadhan_base_domain: e-logistics-planning.sadhan-pv-dev.tatamotors.com
+central_keycloak_resource: avantgarde-logistics-packaging-pv
+rds_host_logistics: logistics-packaging-db.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+pv_logistics_packaging_master_db: logistics_packaging_db
+pv_logistics_packaging_master_db_username: logistics_user
+postgres_connection_pool_logistics: 55
+aws_region: ap-south-1
+DEBUG_MODE: True
+s3_bucket_logestics_pv_dev: pv-logistics-packaging-document-master-dev
+sadhan_esakha_base_domain: e-logistics-planning.esakha-pv-dev.tatamotors.com
+esakha_base_domain: esakha-dev-pv.tatamotors.com
+sadhan_ev_base_domain: sadhan-ev-dev.tatamotors.com

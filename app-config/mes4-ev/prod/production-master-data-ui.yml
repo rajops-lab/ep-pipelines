@@ -1,0 +1,66 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 10Mi
+  limits:
+    memory: 14Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.{{ep_base_domain}}",
+          AUTH_ENDPOINT: "{{central_keycloak_base_url}}/auth",
+          ENV_TYPE: "PROD",
+          LOGGING_ENDPOINT_USERNAME: "{{ui_logger_username}}",
+          LOGGING_ENDPOINT_PASSWORD: "{{ui_logger_password}}",
+          PRODUCTION_PLANNING_UI_URL: "https://planning.{{ep_base_domain}}",
+          HOME_UI_BASE_URL: "https://home.{{ep_base_domain}}",
+          APPLICATION_VARIANT: "mes4-ev"
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "{{central_keycloak_realm}}",
+          "auth-server-url": "{{central_keycloak_base_url}}/auth/",
+          "ssl-required": "all",
+          "resource": "avantgarde-production-planning-ev",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: production-master-data-ui
+      authn: none
+      cors_allowed_origins:
+        - https://production-master-data.{{ep_base_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - production-master-data.{{ep_base_domain}}
+        preserve_host: "true"

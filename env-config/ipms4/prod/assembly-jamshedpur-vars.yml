@@ -1,0 +1,16 @@
+replica_count: 1
+plant_name: "jamshedpur"
+db_host: rds-jamshedpur
+db_port: 5432
+kafka_hosts:
+  - kafka1.assembly
+  - kafka2.assembly
+  - kafka3.assembly
+assembly_plant_spring_profiles: prod,ipms4
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 2560Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-jamshedpur
+assembly_plant_instancegroup: assembly-jamshedpur
+account_locking: false
+privileged_account_locking: false
+any_order_receive: false

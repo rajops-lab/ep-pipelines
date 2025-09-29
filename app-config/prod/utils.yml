@@ -1,0 +1,46 @@
+---
+hostAliases:
+{% for kafka_ip in kafka_ips %}
+  - ip: {{ kafka_ip }}
+    hostnames:
+      - kafka-{{ loop.index }}
+{% endfor %}
+  - ip: 172.31.32.36
+    hostnames:
+      - ipms-private.api.tatamotors.com
+      - sap-ecc-private.api.tatamotors.com
+psql:
+  mounts:
+    secret:
+      - name: bash-rc
+        container: psql
+        target: /root/.bashrc
+        mode: "0700"
+        content: |
+          alias psql-ep-authorization-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{authorization_db}} --username={{authorization_db_username}}'
+          alias psql-ep-esakha-authorization-rds='psql --host={{esakha_rds_host}} --port={{esakha_rds_port}} --dbname={{esakha_authorization_db}} --username={{esakha_authorization_db_username}}'
+          alias psql-ep-machine-integration-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{machine_integration_db}} --username={{machine_integration_db_username}}'
+          alias psql-ep-material-master-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{material_master_db}} --username={{material_master_db_username}}'
+          alias psql-ep-plant-master-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{plant_master_db}} --username={{plant_master_db_username}}'
+          alias psql-ep-production-planning-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{production_planning_db}} --username={{production_planning_db_username}}'
+          alias psql-ep-production-quality-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{production_quality_db}} --username={{production_quality_db_username}}'
+          alias psql-ep-production-broadcast-rds='psql --host={{esakha_rds_host}} --port={{esakha_rds_port}} --dbname={{production_broadcast_db}} --username={{production_broadcast_db_username}}'
+          alias psql-ep-esakha-rds='psql --host={{esakha_rds_host}} --port={{esakha_rds_port}} --dbname={{esakha_db}} --username={{esakha_db_username}}'
+          alias psql-ep-reconciliation-rds='psql --host={{esakha_rds_host}} --port={{esakha_rds_port}} --dbname={{reconciliation_db}} --username={{reconciliation_db_username}}'
+          alias psql-ep-po-master-rds='psql --host={{rds_host}} --port={{rds_port}} --dbname={{po_master_db}} --username={{po_master_db_username}}'
+      - name: pg-pass
+        container: psql
+        target: /root/.pgpass
+        mode: "0600"
+        content: |
+          {{rds_host}}:{{rds_port}}:{{authorization_db}}:{{authorization_db_username}}:{{authorization_db_password}}
+          {{esakha_rds_host}}:{{esakha_rds_port}}:{{esakha_authorization_db}}:{{esakha_authorization_db_username}}:{{esakha_authorization_db_password}}
+          {{rds_host}}:{{rds_port}}:{{machine_integration_db}}:{{machine_integration_db_username}}:{{machine_integration_db_password}}
+          {{rds_host}}:{{rds_port}}:{{material_master_db}}:{{material_master_db_username}}:{{material_master_db_password}}
+          {{rds_host}}:{{rds_port}}:{{plant_master_db}}:{{plant_master_db_username}}:{{plant_master_db_password}}
+          {{rds_host}}:{{rds_port}}:{{production_planning_db}}:{{production_planning_db_username}}:{{production_planning_db_password}}
+          {{rds_host}}:{{rds_port}}:{{production_quality_db}}:{{production_quality_db_username}}:{{production_quality_db_password}}
+          {{esakha_rds_host}}:{{esakha_rds_port}}:{{production_broadcast_db}}:{{production_broadcast_db_username}}:{{production_broadcast_db_password}}
+          {{esakha_rds_host}}:{{esakha_rds_port}}:{{esakha_db}}:{{esakha_db_username}}:{{esakha_db_password}}
+          {{esakha_rds_host}}:{{esakha_rds_port}}:{{reconciliation_db}}:{{reconciliation_db_username}}:{{reconciliation_db_password}}
+          {{rds_host}}:{{rds_port}}:{{po_master_db}}:{{po_master_db_username}}:{{po_master_db_password}}

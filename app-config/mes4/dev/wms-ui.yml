@@ -1,0 +1,74 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 4Mi
+  limits:
+    memory: 5Mi
+
+env:
+  plaintext:
+
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          EPAPPDATA_API_BASE_URL : 'https://api.wms.sadhan-dev.tatamotors.com',
+          EPAPPDATA_WMS_SERVICE_URL : 'https://admin.wms.sadhan-dev.tatamotors.com',
+          EPAPPDATA_ENVIRONMENT: 'non-prod',
+          EPAPPDATA_APP_NAME: 'PV WMS UI',
+          EPAPPDATA_APP_VERSION: '1.0.0',
+          EPAPPDATA_FEATURES_ENABLED: 'inventory,warehouse,tracking',
+          EPAPPDATA_DEBUG_MODE: 'true',
+          EPAPPDATA_SESSION_TIMEOUT: '3600',
+          EPAPPDATA_MAX_FILE_SIZE: '10MB',
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "internal",
+          "auth-server-url": "https://qa.sso.tatamotors.com/auth/",
+          "ssl-required": "external",
+          "resource": "mes-wms",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: wms-ui
+      authn: none
+      cors_allowed_origins:
+        - https://wms.sadhan-dev.tatamotors.com
+        - https://admin.wms.sadhan-dev.tatamotors.com
+        - https://api.wms.sadhan-dev.tatamotors.com
+        - http://localhost:3000/
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - wms.sadhan-dev.tatamotors.com
+        preserve_host: "true"

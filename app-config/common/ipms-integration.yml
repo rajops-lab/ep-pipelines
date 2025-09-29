@@ -1,0 +1,86 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+replicaCount: {{replica_count}}
+resources:
+  requests:
+    cpu: {{cpu_request}}
+    memory: {{memory_request}}
+  limits:
+    memory: {{memory_limit}}
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=ipms-integration'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KAFKA_RETRY_TOPIC: 'ipms-retry-v1'
+    KAFKA_ERROR_TOPIC: 'ipms-error-v1'
+    KAFKA_RETRY_INTERVAL_MINUTE: 5
+    KAFKA_MAX_RETRY_ATTEMPT: {{kafka_max_retry_attempt}}
+    IPMS_API_BASE_URL: {{ipms_api_base_url}}
+    EP_PLANT_MASTER_BASE_URL: 'http://plant-master'
+    PUNE_IPMS_CLIENT_ID: {{ipms_client_id['pune']}}
+    JAMSHEDPUR_IPMS_CLIENT_ID: {{ipms_client_id['jamshedpur']}}
+    DHARWAD_IPMS_CLIENT_ID: {{ipms_client_id['dharwad']}}
+    LUCKNOW_IPMS_CLIENT_ID: {{ipms_client_id['lucknow']}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    BUILD_CARD_ENABLED_PLANTS: '{{ipms_connector_build_card_enabled_plants}}'
+    LUCKNOW_MATERIAL_INSERT_RFC: ZLRFC_INSRT_ZPP_EQMT
+    JAMSHEDPUR_MATERIAL_INSERT_RFC: ZJRFC_INSERT_ZPP_EQMT
+    PUNE_MATERIAL_INSERT_RFC: ZPRFC_INSRT_ZPP_EQMT
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+    IPMS_API_USER_KEY: {{ipms_api_user_key}}
+hostAliases:
+  - ip: 172.31.32.36
+    hostnames:
+      - {{ipms_private_host_name}}
+service:
+  port: 80
+
+cronjobs:
+  apiVersion: batch/v1
+  http:
+    {%- for material in ipmsstatus.materials %}
+
+    - name: sync-{{material}}-status
+      schedule: '* * * * *'
+      concurrencyPolicy: 'Forbid'
+      method: PATCH
+      context: sync-material-status?material={{material}}
+      headers:
+        Accept: 'application/json'
+
+    {%- endfor %}
+
+    {%- for plant in ddms.plants %}
+
+    - name: sync-{{plant}}-quality-data
+      schedule: '* * * * *'
+      concurrencyPolicy: 'Forbid'
+      method: PATCH
+      context: sync/quality?plant={{plant}}
+      headers:
+        Accept: 'application/json'
+
+    {%- endfor %}
+
+    - name: sync-aggregate-availability
+      schedule: '* * * * *'
+      concurrencyPolicy: 'Forbid'
+      method: PATCH
+      context: sync-all-aggregate-availability
+      headers:
+        Accept: 'application/json'

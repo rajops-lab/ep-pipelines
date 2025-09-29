@@ -1,0 +1,37 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8080
+  monitoringPort: 9082
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+podmonitor:
+  endpoints:
+    - honor_labels: true
+      interval: 10s
+      path: /actuator/prometheus
+env:
+  plaintext:
+    DB_HOST: {{bom_service_rds_host}}
+    DB_PORT: {{rds_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SAP_CONNECTOR_SERVICE_URL: {{sap_connector_service_url}}
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    AWS_REGION: {{aws_region}}
+    DB_NAME: '{{bom_service_db}}'
+    DB_USER: '{{bom_service_db_username}}'
+    CORRECT_HIERARCHY: '{{correct_hierarchy}}'
+  secret:
+    DB_PASSWORD: {{bom_service_db_password}}
+replicaCount: {{replica_count}}
+resources:
+  requests:
+    cpu: 200m
+    memory: {{memory_request}}
+  limits:
+    memory: {{memory_limit}}
+service:
+  port: 80

@@ -1,0 +1,12 @@
+ library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDocker {
+    code_repo = 'https://github.com/tmlconnected/ep-infrastructure.git'
+    docker_file_dir = 'docker/ppc-booked-data-backup-util'
+    ecr_repo_name = 'ep-ppc-booked-data-backup-util'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-ppc-booked-data-backup-util'
+    image_tag = 'ppc-booked-data-backup-util:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+}

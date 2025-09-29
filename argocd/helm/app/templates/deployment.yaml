@@ -1,0 +1,195 @@
+apiVersion: apps/v1
+kind: {{ .Values.kind }}
+metadata:
+  namespace: {{ include "app.namespace" . }}
+  name: {{ include "app.name" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.kind "StatefulSet" }}
+  serviceName: {{ include "app.name" . }}
+  {{- end }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.dns }}
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          {{- range $nameserver := .Values.dns.nameservers }}
+          - {{ $nameserver }}
+          {{- end }}
+        searches:
+          {{- range $search := .Values.dns.searches }}
+          - {{ $search }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+      {{- range .Values.hostAliases }}
+        - ip: {{ .ip }}
+          hostnames:
+          {{- toYaml .hostnames | nindent 12 }}
+      {{- end }}
+      {{- end }}
+      affinity:
+      {{- if .Values.affinity }}
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{ else }}
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: kops.k8s.io/instancegroup
+                    operator: In
+                    values:
+                      - nodes
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- if .Values.mounts }}
+      volumes:
+      {{- if .Values.mounts.secret }}
+        - name: mounts-secrets
+          secret:
+            defaultMode: 420
+            secretName: {{ include "app.name" . }}-mounts-secrets
+            items:
+            {{- range .Values.mounts.secret }}
+              - key: {{ .name }}
+                path: {{ .name }}
+            {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if and .Values.service .Values.kong.services }}
+      initContainers:
+      {{- range .Values.kong.services }}
+        - name: kong-configure-{{ .name }}
+          image: {{ $.Values.kong.image }}:{{ $.Values.kong.tag }}
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          resources:
+            {{- toYaml $.Values.kong.resources | nindent 12 }}
+          command:
+            - {{ $.Values.kong.command }}
+          env:
+            - name: KONG_HOST
+              value: {{ $.Values.kong.name }}.{{ $.Values.kong.namespace }}.svc.cluster.local
+            - name: KONG_PORT
+              value: {{ $.Values.kong.port | quote }}
+            - name: SERVICE_NAME
+              value: {{ .name }}
+            - name: SERVICE_HOST
+              value: {{ include "app.name" $ }}.{{ include "app.namespace" $ }}.svc.cluster.local
+            - name: SERVICE_PORT
+              value: {{ $.Values.service.port | quote }}
+            - name: SERVICE_PATH
+              value: {{ .service_path }}
+            - name: SERVICE_CONNECT_TIMEOUT_SECONDS
+              value: {{ .connect_timeout | default 60 | quote }}
+            - name: SERVICE_WRITE_TIMEOUT_SECONDS
+              value: {{ .write_timeout | default 60 | quote }}
+            - name: SERVICE_READ_TIMEOUT_SECONDS
+              value: {{ .read_timeout | default 60 | quote }}
+            {{- with .routes }}
+            - name: ROUTE_PATHS
+              value: {{ include "kong.route_paths" . | quote }}
+            - name: ROUTE_STRIP_PATH
+              value: {{ .strip_path | default "false" | quote }}
+            - name: ROUTE_HOSTS
+              value: {{ include "kong.route_hosts" . | quote }}
+            - name: ROUTE_PRESERVE_HOST
+              value: {{ .preserve_host | default "false" | quote }}
+            {{- end }}
+            - name: USER_INFO_ENDPOINT
+              value: {{ .user_info_endpoint | default "" }}
+            - name: AUTH_PLUGIN
+              value: {{ .authn | default "none" }}
+            - name: CORS_ALLOWED_ORIGINS
+              value: {{ include "cors.allowed_origins" . | quote }}
+            - name: REMOVE_HEADERS
+              value: {{ include "response_transformers.remove_headers" . | default $.Values.remove_headers | join ","  | quote }}
+            - name: RESPONSE_TRANSFORMERS
+              value: {{ include "response_transformers.add_headers" . | default $.Values.response_transformers | join ","  | quote }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: app
+          image: {{ .Values.app.image }}:{{ .Values.app.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            {{- if eq (default "httpGet" .Values.app.livenessProbeType) "httpGet" }}
+            httpGet:
+              path: {{ .Values.app.livenessProbe }}
+              port: {{ .Values.app.monitoringPort | default .Values.app.port }}
+            {{- else if eq .Values.app.livenessProbeType "tcpSocket" }}
+              tcpSocket:
+                port: {{ .Values.app.monitoringPort | default .Values.app.port }}
+            {{- end }}
+            failureThreshold: 5
+            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.livenessDelaySeconds }}
+            timeoutSeconds: 2
+          readinessProbe:
+            {{- if eq (default "httpGet" .Values.app.readinessProbeType) "httpGet" }}
+            httpGet:
+              path: {{ .Values.app.readinessProbe }}
+              port: {{ .Values.app.monitoringPort | default .Values.app.port }}
+            {{- else if eq .Values.app.readinessProbeType "tcpSocket" }}
+              tcpSocket:
+                port: {{ .Values.app.monitoringPort | default .Values.app.port }}
+            {{- end }}
+            failureThreshold: 3
+            periodSeconds: 10
+            initialDelaySeconds: {{ .Values.app.readinessDelaySeconds }}
+            timeoutSeconds: 2
+          {{- if .Values.mounts }}
+          volumeMounts:
+          {{- if .Values.mounts.secret }}
+          {{- range .Values.mounts.secret }}
+            - name: mounts-secrets
+              mountPath: {{ .target }}
+              subPath: {{ .name }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          ports:
+            - name: app
+              containerPort: {{ .Values.app.port }}
+              protocol: TCP
+            - name: monitoring
+              containerPort: {{ .Values.app.monitoringPort | default .Values.app.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.env }}
+          {{- if or .Values.env.plaintext .Values.env.fieldref }}
+          env:
+            {{- if .Values.env.plaintext }}
+            {{- range $key, $val := .Values.env.plaintext }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.env.fieldref }}
+            {{- range $key, $val := .Values.env.fieldref }}
+            - name: {{ $key }}
+              valueFrom:
+                fieldRef:
+                  fieldPath: {{ $val }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.env.secret }}
+          envFrom:
+            - secretRef:
+                name: {{ include "app.name" . }}-env-secrets
+          {{- end}}
+          {{- end}}

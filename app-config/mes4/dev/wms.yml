@@ -1,0 +1,81 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+
+replicaCount: 1
+resources:
+  requests:
+    cpu: 200m
+    memory: 1200Mi
+  limits:
+    memory: 2048Mi
+entrypoint: ["/code/entrypoint-app.sh"]
+env:
+  plaintext:
+    DATABASE_PORT : {{wms_rds_port}}
+    BS : {{wms_bs}}
+
+
+  secret:
+    DATABASE_NAME : {{wms_database_name}}
+    DATABASE_USER : {{wms_database_user}}
+    DATABASE_PASSWORD : {{wms_database_password}}
+    DATABASE_HOST : {{wms_database_host}}
+    SECRET_KEY : {{wms_secret_key}}
+    AWS_SECRET_ACCESS_KEY_ID : {{wms_aws_access_key}}
+    REGION_NAME : {{wms_aws_region}}
+    S3_BUCKET_NAME : {{wms_s3_bucket}}
+    AWS_SECRET_ACCESSS_KEY : {{wms_aws_secret_key}}
+    MES_USER_NAME : {{wms_mes_user_name}}
+    MES_PASSWORD : {{wms_mes_password}}
+    AWS_S3_ENV : {{wms_s3_env}}
+    TOKEN_AUTHORIZATION : {{wms_token_authorisation}}
+    ENCRYPTION_DECRYPTION_KEY_VALUE : {{wms_encryption_decryption_key}}
+    STANDARD_IV_VALUE : {{wms_standard_iv_value}}
+    MES_SERVER : {{wms_mes_server}}
+
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: wms
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://wms.sadhan-dev.tatamotors.com
+        - https://admin.wms.sadhan-dev.tatamotors.com
+        - https://api.wms.sadhan-dev.tatamotors.com
+        - https://172.22.66.232/
+        - {{local_development_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+        - 'Access-Control-Allow-Origin: https://vtdms-transporter-broadcast.esakha-pv-dev.tatamotors.com'
+      remove_headers:
+        - 'Server'
+      routes:
+        hosts :
+          - api.wms.sadhan-dev.tatamotors.com
+        paths:
+          - /
+        strip_path: "true"

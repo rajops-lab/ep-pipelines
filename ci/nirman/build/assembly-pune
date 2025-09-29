@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleAssemblyWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-assembly-root.git'
+    ecr_repo_name = 'ep-assembly'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-assembly'
+    image_tag = 'tml/assembly:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:openjdk-17-alpine'
+    downstream_jobs = ['../deploy/dev/assembly-pune']
+}

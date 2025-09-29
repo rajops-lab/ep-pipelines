@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleSpecifiedJavaVersionWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-gmes-integration.git'
+    ecr_repo_name = 'ep-gmes-integration'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-gmes-integration'
+    image_tag = 'ep-gmes-integration:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:openjdk-17-alpine'
+    downstream_jobs = []
+}

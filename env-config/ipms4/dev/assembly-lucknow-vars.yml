@@ -1,0 +1,12 @@
+replica_count: 1
+plant_name: "lucknow"
+db_host: rds-lucknow
+db_port: 5432
+assembly_plant_spring_profiles: dev,local,ipms4
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 300Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-lucknow
+assembly_plant_instancegroup: assembly-lucknow
+account_locking: true
+privileged_account_locking: true
+any_order_receive: true

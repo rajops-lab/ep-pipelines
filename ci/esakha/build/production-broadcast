@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleSpecifiedJavaVersionWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-production-broadcast.git'
+    ecr_repo_name = 'ep-production-broadcast'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-production-broadcast'
+    image_tag = 'ep-production-broadcast:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/production-broadcast']
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:17.0.5-lib-alpine'
+}

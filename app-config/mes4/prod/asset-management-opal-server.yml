@@ -1,0 +1,48 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 7002
+  monitoringPort: 7002
+  livenessProbe: /healthcheck
+  readinessProbe: /healthcheck
+replicaCount: {{opal_server_replica_count}}
+resources:
+  requests:
+    cpu: {{opal_server_cpu_request}}
+    memory: {{opal_server_memory_request}}
+  limits:
+    cpu: {{opal_server_cpu_limit}}
+    memory: {{opal_server_memory_limit}}
+env:
+  plaintext:
+    OPAL_BROADCAST_URI: {{OPAL_BROADCAST_URI}}
+    UVICORN_NUM_WORKERS: {{UVICORN_NUM_WORKERS}}
+    OPAL_POLICY_REPO_URL: {{OPAL_POLICY_REPO_URL}}
+    OPAL_POLICY_REPO_POLLING_INTERVAL: {{OPAL_POLICY_REPO_POLLING_INTERVAL}}
+    OPAL_POLICY_REPO_CLONE_PATH: {{OPAL_POLICY_REPO_CLONE_PATH}}
+    OPAL_LOG_FORMAT_INCLUDE_PID: true
+    ses_sourceemail: {{ses_sourceemail}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-management-opal-server
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      connect_timeout: 120
+      write_timeout: 120
+      read_timeout: 120
+      cors_allowed_origins:
+        - https://asset-management.{{fractal_base_domain}}
+        - https://api.asset-management.esakha.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /opal-server
+        strip_path: "true"

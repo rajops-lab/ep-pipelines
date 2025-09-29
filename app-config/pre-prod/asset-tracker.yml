@@ -1,0 +1,42 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9090
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{asset_tracker_db}}'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_USERNAME: {{asset_tracker_db_username}}
+    POSTGRES_AUTO_DDL: validate
+    API_SERVER_URL: 'https://api.{{ep_base_domain}}/asset-tracker'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_PASSWORD: {{asset_tracker_db_password}}
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 300Mi
+  limits:
+    memory: 331Mi
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-tracker
+      authn: oidc-auth
+      user_info_endpoint: {{keycloak_user_info_endpoint}}
+      service_path: /
+      routes:
+        paths:
+          - /asset-tracker
+        strip_path: "true"

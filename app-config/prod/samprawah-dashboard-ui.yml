@@ -1,0 +1,65 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 100m
+    memory: 1024Mi
+  limits:
+    memory: 2048Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /usr/share/nginx/html/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.scm-control-tower.samprawah.tatamotors.com",
+          AUTH_ENDPOINT: "{{central_keycloak_base_url}}/auth/",
+          ENV_TYPE: "TEST",
+          UI_BASE_URL: "https://scm-control-tower.{{samprawah_base_domain}}",
+          DEV_API_OEE_URL: "https://api.cv-kt2-ipms4-dev.tatamotors.com",
+          PRE_PROD_API_OEE_URL: "https://api.cv-kt2-ipms4-pre-prod.tatamotors.com",
+          PROD_API_OEE_URL: "https://api.cv-kt2-ipms4.tatamotors.com"
+        }
+    - name: keycloak-json
+      target: /usr/share/nginx/html/keycloak.json
+      content: |
+        {
+          "realm": "{{central_keycloak_realm}}",
+          "auth-server-url": "{{central_keycloak_base_url}}/auth/",
+          "ssl-required": "all",
+          "resource": "avantgarde-control-tower",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: samprawah-dashboard-ui
+      authn: none
+      cors_allowed_origins:
+        - https://scm-control-tower.{{samprawah_base_domain}}
+        - https://api.scm-control-tower.samprawah.tatamotors.com
+        - https://api.cv-kt2-ipms4-dev.tatamotors.com
+        - https://api.cv-kt2-ipms4-pre-prod.tatamotors.com
+        - https://api.cv-kt2-ipms4.tatamotors.com
+        - {{local_development_domain}}
+      response_transformers:
+        - 'X-Frame-Options:SAMEORIGIN'
+        - 'Permissions-Policy:geolocation=();camera=();microphone=()'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - scm-control-tower.{{samprawah_base_domain}}
+        preserve_host: 'true'

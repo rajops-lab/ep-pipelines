@@ -1,0 +1,52 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+ requests:
+    cpu: 125m
+    memory: 375Mi
+ limits:
+    cpu: 250m
+    memory: 750Mi
+env:
+  plaintext:
+    DB_HOST: {{rds_host_dock_traffic_management}}
+    DB_PORT: {{rds_port}}
+    DB_NAME: {{cv_dock_traffic_management_master_db}}
+    DB_USER: {{cv_dock_traffic_management_db_username}}
+    KEYCLOAK_URL: {{central_keycloak_user_info_endpoint}}
+  secret:
+    DB_PASSWORD: {{cv_dock_traffic_management_db_password}}
+    JWT_SECRET_KEY: {{jwt_dock_traffic_management_secret_key}}
+    DJANGO_SECRET_KEY: {{django_dock_traffic_management_secret_key}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: dock-traffic-backend
+      service_path: /
+      cors_allowed_origins:
+        - https://api.sadhan-ep-dev.tatamotors.com
+        - https://dockmanagement.sadhan-ep-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        hosts:
+          - api.sadhan-ep-dev.tatamotors.com
+        paths:
+          - /dockmanagement
+        preserve_host: "true"
+        strip_path: "false"

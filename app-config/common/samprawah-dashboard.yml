@@ -1,0 +1,78 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 3000
+  monitoringPort: 3000
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: {{cpu_request}}
+    memory: {{memory_request}}
+  limits:
+    memory: {{memory_limit}}
+env:
+  plaintext:
+    DB_HOST: {{samprawah_dashboard_rds_host}}
+    DB_PORT: {{samprawah_dashboard_rds_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KEYCLOAK_URL: {{central_keycloak_user_info_endpoint}}
+    REPLNISHMENT_KAFKA_TOPIC_TICKET_DATA: {{replenishment_kafka_topic_ticket_data}}
+    REPLNISHMENT_KAFKA_TOPIC_PART_QUANTITY: {{replenishment_kafka_topic_part_quantity}}
+    INVENTORY_MATERIAL_MASTER_KAFKA_TOPIC: {{inventory_material_master_kafka_topic}}
+    FT_PRODUCTION_BROADCAST_KAFKA_TOPIC: {{ft_production_broadcast_kafka_topic}}
+    PRODUCTION_BROADCAST_ASN_KAFKA_TOPIC: {{production_broadcast_asn_kafka_topic}}
+    VENDOR_MASTER_DETAILS_KAFKA_TOPIC: {{vendor_master_details_kafka_topic}}
+    SAMPRAWAH_API_LINK: {{SAMPRAWAH_API_LINK}}
+    ENV: {{SAMPRAWAH_ENVIRONMENT}}
+
+
+  secret:
+    DB_NAME: {{samprawah_dashboard_db}}
+    DB_USER: {{samprawah_dashboard_db_username}}
+    DB_PASSWORD: {{samprawah_dashboard_db_password}}
+    SAMPRAWAH_SECRET_KEY: {{SAMPRAWAH_SECRET_KEY}}
+    DIGITAL_TWIN_HOST: {{DIGITAL_TWIN_HOST}}
+    DIGITAL_TWIN_CLIENT_ID: {{DIGITAL_TWIN_CLIENT_ID}}
+    DIGITAL_TWIN_CLIENT_SECRET: {{DIGITAL_TWIN_CLIENT_SECRET}}
+    DIGITAL_TWIN_USERNAME: {{DIGITAL_TWIN_USERNAME}}
+    DIGITAL_TWIN_PASSWORD: {{DIGITAL_TWIN_PASSWORD}}
+    DIGITAL_TWIN_END_POINT: {{DIGITAL_TWIN_END_POINT}}
+    REPLENIHSMENT_AWS_ACCESS_KEY: {{REPLENIHSMENT_AWS_ACCESS_KEY}}
+    REPLENISHMENT_AWS_SECRET_KEY: {{REPLENISHMENT_AWS_SECRET_KEY}}
+    TYV_ACCESS_TOKEN: {{TYV_ACCESS_TOKEN}}
+    TYV_VIN_DETAIL_API: {{TYV_VIN_DETAIL_API}}
+    TYV_PARKING_DATA_URL: {{TYV_PARKING_DATA_URL}}
+    AWS_REGION_NAME: {{bucket_region}}
+    S3_BUCKET_PATH: {{bucket_path}}
+    REPLENISHMENT_AWS_BUCKET_NAME: {{bucket_name}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: samprawah-dashboard
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://scm-control-tower.{{samprawah_base_domain}}
+        - https://samprawah-dashboard.{{samprawah_base_domain}}
+        - ws://scm-control-tower.{{samprawah_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        hosts:
+          - api.samprawah-dashboard.{{samprawah_base_domain}}
+          - api.scm-control-tower.{{samprawah_base_domain}}
+        paths:
+          - /samprawah-dashboard
+        strip_path: "true"

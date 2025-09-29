@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-warehouse-ui.git'
+    ecr_repo_name = 'ep-warehouse-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-warehouse-ui'
+    image_tag = 'ep-warehouse-ui:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-nginx:1.19.10-alpine'
+    downstream_jobs = ['../deploy/dev/warehouse-ui']
+}

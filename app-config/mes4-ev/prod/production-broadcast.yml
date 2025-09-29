@@ -1,0 +1,161 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+  livenessDelaySeconds: 60
+  readinessDelaySeconds: 60
+replicaCount: 3
+resources:
+  requests:
+    cpu: 30m
+    memory: 530Mi
+  limits:
+    memory: 742Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_broadcast_db}}?ApplicationName=production-broadcast'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: {{postgres_auto_ddl}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    email_notification_sender_email: {{email_notification_sender_email}}
+    email_notification_adherence_report_cc_email_id_list: {{email_notification_adherence_report_cc_email_id_list}}
+    email_notification_adherence_report_bcc_email_id_list: {{email_notification_adherence_report_bcc_email_id_list}}
+    email_notification_application_url: {{email_notification_production_broadcast_application_url}}
+    email_notification_allowed_domains: {{email_notification_allowed_domains}}
+    email_notification_region: {{email_notification_region}}
+    keycloak_base_url: '{{central_keycloak_base_url}}/auth/'
+    keycloak_realm_name: {{central_keycloak_realm}}
+    email_notification_vendor_alt_mail: {{email_alt_to_address}}
+    API_SERVER_URL: 'https://api.{{esakha_base_domain}}/production-broadcast'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    enable-dsob-distribution: true
+    adherence_report_disabled_plants: {{adherence_report_disabled_plants}}
+    FT_INTEGRATION_ADD_TRIP_BASE_URL: 'https://api.freighttiger.com/api/tether/connect'
+    FT_INTEGRATION_CLOSE_TRIP_BASE_URL: 'https://www.freighttiger.com/saas'
+    FT_INTEGRATION_ADD_TRIP: 'trip/add'
+    FT_INTEGRATION_CLOSE_TRIP: 'trip/close'
+    EVBU_SAP_CONNECTOR_BASE_URL: 'http://sap-connector.assembly'
+  secret:
+    POSTGRES_USERNAME: {{production_broadcast_db_username}}
+    POSTGRES_PASSWORD: {{production_broadcast_db_password}}
+    keycloak_client_id: {{central_keycloak_production_broadcast_client_id}}
+    keycloak_client_secret: {{central_keycloak_production_broadcast_client_secret}}
+    keycloak_production_broadcast_user_group_id: {{central_keycloak_production_broadcast_user_group_id}}
+    DB_USERNAME: {{production_broadcast_db_username}}
+    DB_PASSWORD: {{production_broadcast_db_password}}
+    FT_INTEGRATION_TOKEN: {{production_brodcast_ft_bearer_token}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: production-broadcast-swagger
+      authn: basic-auth
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /swagger-ui
+      routes:
+        paths:
+          - /production-broadcast-swagger
+        strip_path: "true"
+    - name: production-broadcast
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://production-broadcast.{{esakha_base_domain}}
+        - https://production-broadcast.{{esakha_base_domain}}/
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /production-broadcast
+        strip_path: "true"
+    - name: production-broadcast-external
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint_external}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      routes:
+        paths:
+          - /production-broadcast/external
+        strip_path: "true"
+cronjobs:
+  apiVersion: {{cron_job_api_version}}
+  http:
+    - name: aggregate-adherence-report
+      schedule: '30 11 * * *'
+      method: GET
+      context: "cron-jobs/aggregate-adherence-report"
+      headers:
+        Accept: "application/json"
+    - name: system-stock-plant-refresh
+      schedule: '*/30 * * * *'
+      method: GET
+      context: "cron-jobs/system-stock/plant-refresh"
+      headers:
+        Accept: "application/json"
+  app:
+    - name: data-backup
+      schedule: '30 18 1 * *'
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-backup-util:4688e1258b1960370e35373e691b2b974662df28"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 -m data_backup.main'
+      env:
+        plaintext:
+          DB_HOST: '{{rds_host}}'
+          DB_PORT: '{{rds_port}}'
+          DB_NAME: '{{production_broadcast_db}}'
+          TABLE_TIME_AWARE_COLUMN_AND_PLANT_CODE_COLUMN_LIST: '[["vendor_wise_sourced_material_requirement", "date_required_on", "plant"], ["sourced_material_requirement", "date_required_on", "plant"], ["vendor_wise_replenishment_requirement_v2", "date", "plant_id"], ["vendor_wise_replenishment_requirement_v2_audit", "updated_at", "plant_id"], ["replenishment_trigger_details", "created_at", "plant_id"], ["advanced_shipment_notification", "updated_at", "plant"], ["advanced_shipment_notification_idoc", "created_at", "plant"], ["ft_integration", "created_at", "plant"], ["ft_integration_audit", "created_at", "plant"], ["grn_details", "created_at", "plant_id"]]'
+          TABLE_AND_COLUMN_WITH_PLANT_CODE_VALUE: '["plant","code"]'
+          BUCKET_NAME: 'avantgarde-mes4-ev-prod-data-backup'
+          PLATFORM_NAME: 'esakha'
+          APPLICATION_NAME: 'production-broadcast'
+        secret:
+          DB_USERNAME: {{production_broadcast_db_username}}
+          DB_PASSWORD: {{production_broadcast_db_password}}
+    - name: data-archive
+      schedule: '30 18 2-31 * *'
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-data-archive-util:4688e1258b1960370e35373e691b2b974662df28"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 -m data_archive.main'
+      env:
+        plaintext:
+          DB_HOST: '{{rds_host}}'
+          DB_PORT: '{{rds_port}}'
+          DB_NAME: '{{production_broadcast_db}}'
+          TABLE_AND_TIME_AWARE_COLUMN_LIST: '[["vendor_wise_sourced_material_requirement", "date_required_on"], ["sourced_material_requirement", "date_required_on"], ["vendor_wise_replenishment_requirement_v2", "date"], ["vendor_wise_replenishment_requirement_v2_audit", "updated_at"], ["extended_required_by_material_details", "updated_at"], ["extended_required_by_material_details_audit", "updated_at"], ["replenishment_trigger_details", "created_at"], ["advanced_shipment_notification", "updated_at"], ["advanced_shipment_notification_idoc", "created_at"], ["ft_integration", "created_at"], ["ft_integration_audit", "created_at"], ["grn_details", "created_at"]]'
+          THRESHOLD_DAYS: '31'
+        secret:
+          DB_USERNAME: {{production_broadcast_db_username}}
+          DB_PASSWORD: {{production_broadcast_db_password}}

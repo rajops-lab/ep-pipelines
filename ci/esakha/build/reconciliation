@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildMultiModuleGradleSpecifiedJavaVersionWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-reconciliation.git'
+    ecr_repo_name = 'ep-reconciliation'
+    modules = ['reconciliation', 'file-ingestion']
+    ecr_base = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/reconciliation']
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:corretto-17.0.5'
+}

@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'mes4/dev'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'logistics-esakha-ui'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/pv-vendor-logistics-and-packaging-web-portal'
+    release_notes_slack_channel = 'ep-releases-dev'
+    ecr_repo_name = 'pv-vendor-logistics-and-packaging-web-portal'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/pv-vendor-logistics-and-packaging-web-portal'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../../info/dev/what-is-running']
+}

@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'mqtt-machine-data-listener'
+    namespace = 'ep'
+    github_repo = 'tmlconnected/ep-mqtt-machine-data-listener'
+    release_notes_slack_channel = 'ep-releases-prod'
+    ecr_repo_name = 'ep-mqtt-machine-data-listener'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-mqtt-machine-data-listener'
+    ecr_access_role = 'arn:aws:iam::384588637744:role/EcrCrossAccountAccess'
+    downstream_jobs = ['../../info/prod/what-is-running']
+}

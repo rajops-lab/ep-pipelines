@@ -1,0 +1,9 @@
+dns:
+  nameservers:
+    - 172.31.16.55
+    - 172.31.16.57
+  searches:
+    - tmindia.tatamotors.com
+
+kafka_enabled: false
+sap_client_id: 500

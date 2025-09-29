@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDockerWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/control-tower-backend.git'
+    docker_file_dir = ''
+    ecr_repo_name = 'control-tower-backend'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/control-tower-backend'
+    image_tag = 'control-tower-backend:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+}

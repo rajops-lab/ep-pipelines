@@ -1,0 +1,11 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+whatCanBeReleased {
+    kubeconfig_credential = 'ep-kube-config'
+    namespace = 'ep'
+    chart = 'ep-app-0.1.0'
+    slack_channel = 'ep-releases-prod'
+    ecr_access_role = 'arn:aws:iam::384588637744:role/EcrCrossAccountAccess'
+}

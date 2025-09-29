@@ -1,0 +1,54 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: {{monitoring_port}}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 290Mi
+  limits:
+    memory: 406Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{esakha_authorization_db}}?ApplicationName=avantgarde-authorization'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    ENABLE_FLYWAY: true
+    FLYWAY_LOCATIONS: classpath:db/schemas/common,classpath:db/migrations/esakha
+    ACCESS_TOKEN_UID_FIELD_PATH: 'preferred_username'
+    ACCESS_TOKEN_PRODUCTION_BROADCAST_CLAIMS_FIELD_PATH: 'production_broadcast'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{esakha_authorization_db_username}}
+    POSTGRES_PASSWORD: {{esakha_authorization_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: avantgarde-authorization
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      cors_allowed_origins:
+        - https://home.{{avantgarde_base_domain}}
+        - https://recon.{{esakha_base_domain}}
+        - https://production-broadcast.{{esakha_base_domain}}
+        - https://reports.{{business_connect_domain}}
+      routes:
+        hosts:
+          - api.{{esakha_base_domain}}
+        paths:
+          - /authorization
+        strip_path: "true"

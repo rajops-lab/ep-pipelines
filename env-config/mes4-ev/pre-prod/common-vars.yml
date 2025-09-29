@@ -1,0 +1,34 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+ep_base_domain: mes4-ev-pre-prod.tatamotors.com
+keycloak_base_url: https://qa.sso.tatamotors.com
+keycloak_realm: udyog
+keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+application_variant: mes4-ev
+aws_region: ap-south-1
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+sap_connector_service_url: http://sap-connector.assembly
+sap_raw_bom_bucket_location: tml-mes4-ev-pre-prod-sap-raw-bom
+bom_service_base_url: http://bom-service.avant-garde
+rds_port: 5432
+kafka_ips:
+  -10.164.56.10
+  -10.164.56.80
+  -10.164.56.109
+kafka_port: 9095
+postgres_connection_pool: 5
+dns:
+  nameservers:
+    - 172.31.16.55
+    - 172.31.16.57
+  searches:
+    - tmindia.tatamotors.com
+local_development_domain: http://localhost:3000/
+sadhan_base_domain: sadhan-ev-pre-prod.tatamotors.com
+esakha_base_domain: esakha-pre-prod.tatamotors.com
+digital_twin_env: "TEST"
+keycloak_realm_digital_twin: enterprise
+client_id: digital-twin

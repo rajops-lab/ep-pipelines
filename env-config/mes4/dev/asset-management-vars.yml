@@ -1,0 +1,126 @@
+# redis
+redis_replica_count: 1
+redis_cpu_request: 100m
+redis_memory_request: 256Mi
+redis_cpu_limit: 1000m
+redis_memory_limit: 2048Mi
+redis_port: 80
+redis_url: asset-management-redis
+s3_bucket_name: tml-mes4-prod-asset-management
+ses_sourceemail: no-reply@esakha-dev.tatamotors.com
+# db-api
+dms_db_host: pv-asset-management-databaseb-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+iot_db_host: pv-asset-management-databaseb-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+iot_db_port: 3306
+dms_db_port: 3306
+dms_db_name: fractaldb
+iot_db_name_ver_2: fractaldb
+fractal_base_domain: esakha-dev.tatamotors.com
+dms_db_user: fractaldb_rw
+iot_db_user: fractaldb_rw
+local_development_domain: http://localhost:3000/
+SAP_CLIENT: 000
+SAP_GET_USER: 000
+SAP_GET_PASS: 0000
+SAP_POST_PASS: 000
+SAP_API_URL: 0000
+SAP_TIMEOUT: 0000
+SMTP_EMAIL: 000
+SMTP_APP_PASS: 0000
+db_api_replica_count: 1
+db_api_cpu_request: 256m
+db_api_memory_request: 512Mi
+db_api_cpu_limit: 1000m
+db_api_memory_limit: 2048Mi
+replica_count: 1
+
+# opa
+opa_replica_count: 1
+opa_cpu_request: 100m
+opa_memory_request: 256Mi
+opa_cpu_limit: 500m
+opa_memory_limit: 512Mi
+
+# opal-server
+opal_server_replica_count: 1
+opal_server_cpu_request: 100m
+opal_server_memory_request: 128Mi
+opal_server_cpu_limit: 500m
+opal_server_memory_limit: 512Mi
+OPAL_BROADCAST_URI: redis://asset-management-redis:6379
+UVICORN_NUM_WORKERS: 4
+OPAL_POLICY_REPO_URL: https://bitbucket.org/novigatech/varroc_opa
+OPAL_POLICY_REPO_POLLING_INTERVAL: 30
+OPAL_POLICY_REPO_CLONE_PATH: ~/opal
+
+# opa-client
+opal_client_replica_count: 1
+opal_client_cpu_request: 100m
+opal_client_memory_request: 128Mi
+opal_client_cpu_limit: 500m
+opal_client_memory_limit: 512Mi
+OPAL_SERVER_URL: http://asset-management-opal-server:80
+OPAL_FETCH_PROVIDER_MODULES: opal_common.fetcher.providers
+OPAL_LOG_FORMAT_INCLUDE_PID: true
+OPAL_INLINE_OPA_LOG_FORMAT: http
+OPAL_POLICY_STORE_URL: http://asset-management-opa:80
+INLINE_OPA_ENABLED: false
+
+#asset-api
+asset_api_replica_count: 1
+asset_api_cpu_request: 100m
+asset_api_memory_request: 256Mi
+asset_api_cpu_limit: 1000m
+asset_api_memory_limit: 2048Mi
+db_api_port: 80
+db_api_host: asset-management-db-api
+OPA_API_HOST: asset-management-opa
+OPA_API_PORT: 80
+OPA_CLIENT_HOST: asset-management-opal-client
+OPA_CLIENT_PORT: 80
+AUTH_API_HOST: asset-management-auth-api
+AUTH_API_PORT: 80
+USER_API_HOST: asset-management-user-api
+USER_API_PORT: 80
+STORAGE_API_HOST: asset-management-storage-api
+STORAGE_API_PORT: 80
+
+#auth-api
+auth_api_replica_count: 1
+auth_api_cpu_request: 100m
+auth_api_memory_request: 256Mi
+auth_api_cpu_limit: 1000m
+auth_api_memory_limit: 2048Mi
+
+#maintenance_api
+maintenance_api_replica_count: 1
+maintenance_api_cpu_request: 100m
+maintenance_api_memory_request: 256Mi
+maintenance_api_cpu_limit: 1000m
+maintenance_api_memory_limit: 2048Mi
+
+
+#physical_verification
+physical_verification_replica_count: 1
+physical_verification_cpu_request: 100m
+physical_verification_memory_request: 256Mi
+physical_verification_cpu_limit: 1000m
+physical_verification_memory_limit: 2048Mi
+NOTIFICATION_API_HOST: asset-management-notification-api
+NOTIFICATION_API_PORT: 80
+ALERT_API_HOST: asset-management-alert-api
+ALERT_API_PORT: 80
+
+#user-api
+user_api_replica_count: 1
+user_api_cpu_request: 100m
+user_api_memory_request: 256Mi
+user_api_cpu_limit: 1000m
+user_api_memory_limit: 2048Mi
+
+
+#sftp
+sftp_username: CA_PSC_Dashboard_Data
+sftp_port: 9091
+sftp_hostname: tmsftp.tatamotors.com
+whitelisted_emails: "noviga.tech,tatamotors.com"

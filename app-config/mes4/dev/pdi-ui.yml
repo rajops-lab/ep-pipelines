@@ -1,0 +1,71 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 4Mi
+  limits:
+    memory: 5Mi
+
+env:
+  plaintext:
+    REACT_APP_MAP_KEY: AIzaSyBJ3HaWv8QMBpeG04Gmde4===========
+    REACT_APP_BACKEND_URL: https://api.mes4-dev.tatamotors.com/
+    REACT_APP_DOMAIN_TYPE: dev
+
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          AUTH_ENDPOINT: "{{central_keycloak_base_url}}/auth",
+          ENV_TYPE: "TEST",
+          HOME_UI_BASE_URL: "https://pdi.sadhan-pv-dev.tatamotors.com",
+          REACT_APP_MAP_KEY: "AIzaSyBJ3HaWv8BJxV9u0JWlb3QMBpeG04Gmde4",
+          REACT_APP_BACKEND_URL: "https://api.mes4-dev.tatamotors.com/pdi",
+          REACT_APP_DOMAIN_TYPE: "dev"
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "udyog",
+          "auth-server-url": "{{central_keycloak_base_url}}/auth/",
+          "ssl-required": "all",
+          "resource": "avantgarde-tata-pdi",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: pdi-ui
+      authn: none
+      cors_allowed_origins:
+        - https://pdi.sadhan-pv-dev.tatamotors.com
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - pdi.sadhan-pv-dev.tatamotors.com
+        preserve_host: "true"

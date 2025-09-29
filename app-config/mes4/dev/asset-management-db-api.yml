@@ -1,0 +1,80 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 5000
+  monitoringPort: 5000
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: {{db_api_replica_count}}
+resources:
+  requests:
+    cpu: {{db_api_cpu_request}}
+    memory: {{db_api_memory_request}}
+  limits:
+    cpu: {{db_api_cpu_limit}}
+    memory: {{db_api_memory_limit}}
+env:
+  plaintext:
+    DB_API_HOST: {{db_api_host}}
+    DB_API_PORT: {{db_api_port}}
+    dms_db_host: {{dms_db_host}}
+    dms_db_port: {{dms_db_port}}
+    dms_db_name: {{dms_db_name}}
+    iot_db_host: {{iot_db_host}}
+    iot_db_port: {{iot_db_port}}
+    iot_db_name_ver_2: {{iot_db_name_ver_2}}
+    redis_url: {{redis_url}}
+    redis_port: {{redis_port}}
+    log_level: 'DEBUG'
+    log_mode: 'DEV'
+    multi_threaded: 'True'
+    schedule_jobs: 'True'
+    log_file_path: '/var/log/batchlog'
+    disconnection_threshold: '120'
+    nodata_threshold: '900'
+    wrong_datetime_threshold: '10'
+    sftp_username: {{sftp_username}}
+    sftp_port: {{sftp_port}}
+    sftp_hostname: {{sftp_hostname}}
+    s3_bucket_name: {{s3_bucket_name}}
+    ses_sourceemail: {{ses_sourceemail}}
+  secret:
+    dms_db_user: {{dms_db_user}}
+    dms_db_pass: {{dms_db_pass}}
+    iot_db_user: {{iot_db_user}}
+    iot_db_pass: {{iot_db_pass}}
+    s3_access_key_id: {{s3_access_key_id}}
+    s3_secret_key: {{s3_secret_key}}
+    sftp_password: {{sftp_password}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-management-db-api
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      connect_timeout: 120
+      write_timeout: 120
+      read_timeout: 120
+      cors_allowed_origins:
+        - https://asset-management.{{fractal_base_domain}}
+        - https://api.mes4-dev.tatamotors.com
+        - https://api.asset-management.esakha-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /internal-db
+        strip_path: "true"
+    - name: asset-management-swagger
+      authn: basic-auth
+      service_path: /swagger-ui
+      routes:
+        paths:
+          - /asset-management-swagger
+        strip_path: "true"

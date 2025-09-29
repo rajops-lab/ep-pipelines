@@ -1,0 +1,65 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 336Mi
+  limits:
+    memory: 471Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=required-material'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    FLYWAY_ENABLE: {{flyway_enable}}
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+    FLYWAY_BASELINE_ON_MIGRATE: {{flyway_baseline_on_migrate}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    EXP_BOM_SANAND: {{sanand_exploded_bom_enable}}
+    PLANT_ID: {{plant_ids}}
+    KAFKA_EXPLODED_BOM_TOPIC: 'bom-service.bom-response-v1'
+    BUSINESS_UNIT_NAME: 'EVBU'
+    SEQUENCING_ALGO_EV_SANAND: batching
+    CORRECT_HIERARCHY: 'ROOT.NS2060'
+    EXP_BOM_EV_SANAND2: true
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+cronjobs:
+  apiVersion: batch/v1
+  http:
+    - name: purge-old-lined-out-aggregates
+      schedule: '*/10 * * * *'
+      method: PATCH
+      context: support/purge-old-lined-out-aggregates
+      headers:
+        Accept: "application/json"
+
+    - name: bom-sync-current-day
+      schedule: '0 23 1-25 * *'
+      method: PATCH
+      context: support/bom-sync/current-day
+      headers:
+        Accept: "application/json"
+
+    - name: bom-sync-last-day
+      schedule: '0 23 28-31 * *'
+      method: PATCH
+      context: support/bom-sync/last-day
+      headers:
+        Accept: "application/json"

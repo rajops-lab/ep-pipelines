@@ -1,0 +1,103 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: {{monitoring_port}}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 3
+resources:
+  requests:
+    cpu: 50m
+    memory: 530Mi
+  limits:
+    memory: 742Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{authorization_db}}?ApplicationName=authorization'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    ENABLE_FLYWAY: false
+    ACCESS_TOKEN_UID_FIELD_PATH: 'preferred_username'
+    ACCESS_TOKEN_PRODUCTION_BROADCAST_CLAIMS_FIELD_PATH: 'production_broadcast'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{authorization_db_username}}
+    POSTGRES_PASSWORD: {{authorization_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: authorization
+      authn: oidc-auth
+      user_info_endpoint: {{keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://home.{{ep_base_domain}}
+        - https://planning.{{ep_base_domain}}
+        - https://quality.{{ep_base_domain}}
+        - https://maintenance.{{ep_base_domain}}
+        - https://production-master-data.{{ep_base_domain}}
+        - https://digital-twin.{{ep_base_domain}}
+      routes:
+        hosts:
+          - api.{{ep_base_domain}}
+        paths:
+          - /authorization
+        strip_path: "true"
+    - name: assembly-authorization
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://assembly-support.{{ep_base_domain}}
+      routes:
+        hosts:
+          - api.{{ep_base_domain}}
+        paths:
+          - /authorization/assembly
+        strip_path: "true"
+    - name: replenishment-authorization
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      cors_allowed_origins:
+        - https://home.{{ep_base_domain}}
+        - https://{{replenishment_app_name}}.{{sadhan_base_domain}}
+        - https://{{replenishment_app_name}}-config.{{sadhan_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        hosts:
+          - api.{{sadhan_base_domain}}
+        paths:
+          - /authorization
+        strip_path: "true"

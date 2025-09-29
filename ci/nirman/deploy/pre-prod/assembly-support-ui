@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'pre-prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'assembly-support-ui'
+    namespace = 'assembly'
+    github_repo = 'tmlconnected/ep-assembly-support-ui'
+    release_notes_slack_channel = 'ep-releases-pre-prod'
+    ecr_repo_name = 'ep-assembly-support-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-assembly-support-ui'
+    ecr_access_role = 'arn:aws:iam::384588637744:role/EcrCrossAccountAccess'
+    downstream_jobs = ['../../../info/pre-prod/what-is-running']
+}

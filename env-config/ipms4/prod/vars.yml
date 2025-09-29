@@ -1,0 +1,6 @@
+sadhan_base_domain: sadhan-cv.tatamotors.com
+central_keycloak_base_url: https://sso.tatamotors.com
+central_keycloak_realm: udyog
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+cron_job_api_version: batch/v1

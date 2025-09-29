@@ -1,0 +1,70 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 4Mi
+  limits:
+    memory: 5Mi
+
+env:
+  plaintext:
+
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          REACT_APP_BACKEND_URL: 'https://api.iqms.mes4.tatamotors.com',
+          HOME_UI_BASE_URL: 'https://admin.iqms.mes4.tatamotors.com/',
+          REACT_APP_DOMAIN_TYPE: 'prod',
+          VITE_ENCRYPTION_DECRYPTION_KEY_VALUE: 'mYb0mPv1C4Kf1hwzR4RVqsYaOHz1Uk1Ya6Gq2EcgKzM=',
+          VITE_APP_STANDARD_IV: 'zKfN+QyDC+j7FjMvhrLRtA==',
+          VITE_TOKEN_AUTHORIZATION: 'dHl2LWRyaXZlci0xOmphaXNpeWFyYW0=',
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "internal",
+          "auth-server-url": "https://sso.tatamotors.com/auth/",
+          "ssl-required": "external",
+          "resource": "mes-iqms",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: iqms-ui
+      authn: none
+      cors_allowed_origins:
+        - https://iqms.mes4.tatamotors.com
+        - https://admin.iqms.mes4.tatamotors.com
+        - https://api.iqms.mes4.tatamotors.com
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - iqms.mes4.tatamotors.com
+        preserve_host: "true"

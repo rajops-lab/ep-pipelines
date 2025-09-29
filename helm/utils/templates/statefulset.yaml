@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: {{ include "app.namespace" . }}
+  name: {{ include "app.name" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "app.name" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+    spec:
+      {{- if .Values.hostAliases }}
+      hostAliases:
+      {{- range .Values.hostAliases }}
+        - ip: {{ .ip }}
+          hostnames:
+          {{- toYaml .hostnames | nindent 12 }}
+      {{- end }}
+      {{- end }}
+      {{- if or .Values.tinyTools.mounts .Values.kafka.mounts .Values.psql.mounts .Values.mqttClient.mounts .Values.ocClient.mounts .Values.kafkaConfig.mounts }}
+      volumes:
+        {{- $appName := include "app.name" . -}}
+        {{- include "volume.content" (dict "data" .Values.tinyTools "appName" (include "app.name" .)) -}}
+        {{- include "volume.content" (dict "data" .Values.kafka "appName" (include "app.name" .)) -}}
+        {{- include "volume.content" (dict "data" .Values.psql "appName" (include "app.name" .)) -}}
+        {{- include "volume.content" (dict "data" .Values.mqttClient "appName" (include "app.name" .)) -}}
+        {{- include "volume.content" (dict "data" .Values.ocClient "appName" (include "app.name" .)) -}}
+        {{- include "volume.content" (dict "data" .Values.kafkaConfig "appName" (include "app.name" .)) -}}
+      {{- end }}
+      containers:
+        {{- include "container.content" .Values.tinyTools -}}
+        {{- include "container.content" .Values.kafka -}}
+        {{- include "container.content" .Values.psql -}}
+        {{- include "container.content" .Values.mqttClient -}}
+        {{- include "container.content" .Values.ocClient -}}
+        {{- include "container.content" .Values.kafkaConfig -}}

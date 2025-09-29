@@ -1,0 +1,55 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8000
+  monitoringPort: 8000
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 367Mi
+env:
+  plaintext:
+    DB_ENGINE: django.db.backends.postgresql_psycopg2
+    DB_HOST: {{rds_host}}
+    DB_PORT: {{rds_port}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_host in kafka_hosts %}{{kafka_host}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    KEYCLOAK: {{keycloak_base_url}}
+    KEYCLOAK_QA: {{keycloak_qa_base_url}}
+    ENV_VAR: {{ENV}}
+    API_HOST: {{api_host_base}}
+    BOM_SERVICE_BASE_URL: {{bom_service_base_url}}
+    SAP_CONNECTOR_BASE_URL: {{sap_connector_service_url}}
+    ASSEMBLY_CLOUD_URL: {{assembly_cloud_url}}
+  secret:
+    DB_NAME: {{configurator_db}}
+    DB_USER: {{configurator_db_username}}
+    DB_PASSWORD: {{configurator_db_password}}
+    DT_CLIENT_ID: {{configurator_dt_client_id}}
+    DT_USERNAME: {{configurator_dt_username}}
+    DT_PASSWORD: {{configurator_dt_password}}
+    DT_CLIENT_SECRET: {{configurator_dt_client_secret}}
+    STATION_CREDENTIALS_SALT: {{station_credentials_salt}}
+    DJANGO_SECRET_KEY: {{configurator_django_secret_key}}
+    REQUEST_AES_KEY: {{configurator_request_aes_key}}
+    REQUEST_AES_IV: {{configurator_request_aes_iv}}
+    EXCEL_FILE_PASSWORD: {{configurator_excel_file_password}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: configurator
+      service_path: /
+      cors_allowed_origins:
+          - https://configurator.{{ep_base_domain}}
+      routes:
+        paths:
+          - /configurator
+        strip_path: "true"

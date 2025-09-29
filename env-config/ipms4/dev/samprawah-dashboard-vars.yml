@@ -1,0 +1,24 @@
+application_variant: ipms4
+memory_request: 512Mi
+cpu_request: 100m
+memory_limit: 1024Mi
+samprawah_dashboard_rds_host: sampravah-dashboard-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+samprawah_dashboard_rds_port: 5432
+samprawah_base_domain: ep-dev.tatamotors.com
+samprawah_dashboard_db: reports_dashboard
+samprawah_dashboard_db_username: reports_dashboard_rw
+replenishment_kafka_topic_ticket_data : "replenishment.ticket-v1"
+replenishment_kafka_topic_part_quantity : "replenishment.stock-updated-v1"
+inventory_material_master_kafka_topic : "cv.kate.material-master-v1"
+ft_production_broadcast_kafka_topic: "cv.production-broadcast.freight-tiger-close-trip-request-v1"
+production_broadcast_asn_kafka_topic: "cv.production-broadcast.advanced-shipment-notification-v1"
+vendor_master_details_kafka_topic: "vendor-master-v1"
+TYV_ACCESS_TOKEN: 'Basic c2FtcHJhdmFoX3R5dl9kYXRhOkBzYW1wcmF2YWghQCMk'
+TYV_VIN_DETAIL_API: 'https://tyv.sadhan-dev.tatamotors.com/api/vin-aging-list-v2'
+TYV_PARKING_DATA_URL: 'https://tyv.sadhan-dev.tatamotors.com/api/all-vin-status-v1'
+SAMPRAWAH_API_LINK: "https://api.scm-control-tower.ep-dev.tatamotors.com"
+SAMPRAWAH_ENVIRONMENT: Development
+MLFLOW_TRACKING_URI: http://host.docker.internal:5000
+MLFLOW_EXPERIMENT_NAME: DefaultExperiment
+KEYCLOAK_URL_CHATBOT: "https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo"
+READONLY_DB_HOST: sampravah-dashboard-ep-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com

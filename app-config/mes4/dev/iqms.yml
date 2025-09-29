@@ -1,0 +1,82 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 300Mi
+  limits:
+    memory: 512Mi
+env:
+  plaintext:
+    DATABASE_PORT : {{iqms_rds_port}}
+    BS : {{iqms_bs}}
+
+
+  secret:
+    DATABASE_NAME : {{iqms_database_name}}
+    DATABASE_USER : {{iqms_database_user}}
+    DATABASE_PASSWORD : {{iqms_database_password}}
+    DATABASE_HOST : {{iqms_database_host}}
+    SECRET_KEY : {{iqms_secret_key}}
+    AWS_SECRET_ACCESS_KEY_ID : {{iqms_aws_access_key}}
+    REGION_NAME : {{iqms_aws_region}}
+    S3_BUCKET_NAME : {{iqms_s3_bucket}}
+    AWS_SECRET_ACCESSS_KEY : {{iqms_aws_secret_key}}
+    MES_USER_NAME : {{iqms_mes_user_name}}
+    MES_PASSWORD : {{iqms_mes_password}}
+    AWS_S3_ENV : {{iqms_s3_env}}
+    TOKEN_AUTHORIZATION : {{iqms_token_authorisation}}
+    ENCRYPTION_DECRYPTION_KEY_VALUE : {{iqms_encryption_decryption_key}}
+    STANDARD_IV_VALUE : {{iqms_standard_iv_value}}
+    MES_SERVER : {{iqms_mes_server}}
+    CLIENT_KEY : {{CLIENT_KEY}}
+    CLIENT_CERT : {{CLIENT_CERT}}
+    CA_CERT : {{CA_CERT}}
+
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: iqms
+      service_path: /
+      connect_timeout: 600
+      write_timeout: 600
+      read_timeout: 600
+      cors_allowed_origins:
+        - https://iqms.mes4-dev.tatamotors.com
+        - https://admin.iqms.mes4-dev.tatamotors.com
+        - https://api.iqms.mes4-dev.tatamotors.com
+        - https://172.22.66.232/
+        - {{local_development_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+        - 'Access-Control-Allow-Origin: https://vtdms-transporter-broadcast.esakha-pv-dev.tatamotors.com'
+      remove_headers:
+        - 'Server'
+      routes:
+        hosts :
+          - api.iqms.mes4-dev.tatamotors.com
+        paths:
+          - /
+        strip_path: "true"

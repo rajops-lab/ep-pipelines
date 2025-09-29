@@ -1,0 +1,98 @@
+buildInfo:
+  github_repo_name: {{ github_repo_name }}
+  ecr_repo_name: {{ ecr_repo_name }}
+app:
+  image: {{ app_image }}
+  tag: {{ app_image_tag }}
+  port: 9090
+  monitoringPort: {{ monitoring_port }}
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 3
+resources:
+  requests:
+    cpu: 200m
+    memory: 4000Mi
+  limits:
+    memory: 5600Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=required-material'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    FLYWAY_ENABLE: true
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+    FLYWAY_BASELINE_ON_MIGRATE: {{flyway_baseline_on_migrate}}
+    DAYS_TO_RETAIN_AGGREGATE_LINEOUT_MATERIALS: 15
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    BUSINESS_UNIT_NAME: 'CVBU'
+    CORRECT_HIERARCHY: 'ROOT.NS2000,ROOT.NS2063,NS2000.NS2026,ROOT.NS2033,ROOT.NS2035,NS2063.NS2061,NS2061.NS2060,ROOT.NS2031,ROOT.ZNS320,ROOT.ZNS570,ROOT.NS2046,ROOT.ZNS410,ROOT.ZNS712,ROOT.ZNS610,ROOT.ZNS470'
+    PLANTID_CV_JSR: 2001
+    EXP_BOM_CV_JSR: true
+    EXP_BOM_CV_PUNE: true
+    EXP_BOM_CV_LUCKNOW: true
+    EXP_BOM_CV_DHARWAD: true
+
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+cronjobs:
+  apiVersion: {{cron_job_api_version}}
+  http:
+    - name: purge-old-lined-out-aggregates
+      schedule: '0 19 * * *'
+      method: PATCH
+      context: support/purge-old-lined-out-aggregates
+      headers:
+        Accept: 'application/json'
+
+    - name: purge-old-conflicted-agsns
+      schedule: '30 18 * * *'
+      method: PATCH
+      context: support/purge-old-conflicted-aggregates
+      headers:
+        Accept: 'application/json'
+
+    - name: bom-sync-current-day
+      schedule: '0 18 1-25 * *'
+      method: PATCH
+      context: support/bom-sync/current-day
+      headers:
+        Accept: 'application/json'
+
+    - name: bom-sync-last-day
+      schedule: '0 18 28-31 * *'
+      method: PATCH
+      context: support/bom-sync/last-day
+      headers:
+        Accept: 'application/json'
+  app:
+    - name: ppc-data-backup
+      schedule: '0 1 1 * *'
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-ppc-data-backup-util:bb8066a2e8f63e56e07b6c79bc37141d2c1be6b8"
+      args:
+        - '/bin/sh'
+        - '-c'
+        - 'python3 /usr/local/bin/main.py'
+      env:
+        plaintext:
+          DB_HOST: '{{rds_host}}'
+          DB_PORT: '{{rds_port}}'
+          DB_NAME: '{{production_planning_db}}'
+          BACKUP_DURATION : '{{backup_duration}}'
+          BACKUP_FROM_LAST_N_MONTHS: '{{backup_from_last_n_months}}'
+          DAY_OF_MONTH: '{{day_of_month}}'
+          BUCKET_NAME: 'avantgarde-prod-data-backup'
+          PLATFORM_NAME: 'ipms4.0'
+          APPLICATION_NAME: 'production-planning'
+          START_DATE: '2024-01-01'
+          END_DATE: '2024-10-02'
+        secret:
+          POSTGRES_USERNAME: {{production_planning_db_username}}
+          POSTGRES_PASSWORD: {{production_planning_db_password}}

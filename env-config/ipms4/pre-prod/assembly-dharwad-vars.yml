@@ -1,0 +1,9 @@
+replica_count: 1
+plant_name: "dharwad"
+db_host: enterprise-pre-prod.c3jf9pqvphaz.ap-south-1.rds.amazonaws.com
+db_port: 5432
+assembly_plant_spring_profiles: pre-prod,ipms4-pre-prod
+sap_connector_service_url: http://sap-connector.assembly
+assembly_plant_memory_request: 300Mi
+kafka_assembly_plant_consumer_client_id: assembly-plant-dharwad
+assembly_plant_instancegroup: assembly-dharwad

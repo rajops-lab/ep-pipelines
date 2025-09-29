@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDocker {
+    code_repo = 'https://github.com/tmlconnected/ep-infrastructure.git'
+    docker_file_dir = 'docker/jenkins-slaves/jdk17'
+    ecr_repo_name = 'ep-jenkins-slave/jdk17'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-jenkins-slave/jdk17'
+    image_tag = 'ep-jenkins-slave-jdk17:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+}

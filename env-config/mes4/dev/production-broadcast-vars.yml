@@ -1,0 +1,17 @@
+rds_host: avant-garde-mes4-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+production_broadcast_db: supply_chain
+production_broadcast_db_username: supply_chain_rw
+postgres_auto_ddl: update
+email_notification_sender_email: no-reply@esakha-dev.tatamotors.com
+email_notification_adherence_report_cc_email_id_list: ep-esakha-dev@sahaj.ai
+email_notification_adherence_report_bcc_email_id_list: ra.sahaj@tatamotors.com
+email_notification_production_broadcast_application_url: https://production-broadcast.esakha-dev.tatamotors.com/
+email_notification_allowed_domains: vishleshan.net,sahaj.ai, tatamotors.com
+email_notification_region: ap-south-1
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+email_alt_to_address: ep-esakha-supplier+asvendorrecipient@sahaj.ai
+adherence_report_disabled_plants: "SANAND2"
+cron_job_api_version: batch/v1
+central_keycloak_user_info_endpoint_external: https://qa.sso.tatamotors.com/auth/realms/Service/protocol/openid-connect/userinfo

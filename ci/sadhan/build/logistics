@@ -1,0 +1,11 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildMultiModuleGradleSpecifiedJavaVersionWithoutTest {
+    code_repo = 'https://github.com/tmlconnected/sadhan-logistics-packaging-backend.git'
+    ecr_repo_name = 'sadhan-logistics-packaging-backend'
+    ecr_base = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:corretto-17.0.5'
+}

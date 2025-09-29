@@ -1,0 +1,49 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 230Mi
+  limits:
+    memory: 322Mi
+env:
+  plaintext:
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: ep-ui-logger
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      cors_allowed_origins:
+        - https://home.{{ep_base_domain}}
+        - https://planning.{{ep_base_domain}}
+        - https://maintenance.{{ep_base_domain}}
+        - https://production-master-data.{{ep_base_domain}}
+      service_path: /
+      routes:
+        paths:
+          - /logs/v2
+        strip_path: "true"

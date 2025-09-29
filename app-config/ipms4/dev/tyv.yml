@@ -1,0 +1,104 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 100m
+    memory: 600Mi
+  limits:
+    memory: 1024Mi
+env:
+  plaintext:
+    DATASOURCE: {{ DATASOURCE }}
+    SFLT_STATUS: {{ SFLT_STATUS }}
+    DISPATCH_STATUS: {{ DISPATCH_STATUS }}
+    DASHBOARD_TRIP_OVERSPEEDING_NO_DAYS: {{ DASHBOARD_TRIP_OVERSPEEDING_NO_DAYS }}
+    DASHBOARD_TRIP_DAILY_NO_DAYS: {{ DASHBOARD_TRIP_DAILY_NO_DAYS }}
+    DASHBOARD_TRIP_WEEKLY_NO_WEEKS: {{ DASHBOARD_TRIP_WEEKLY_NO_WEEKS }}
+    DASHBOARD_VEHICLE_PARKED_NO_DAYS: {{ DASHBOARD_VEHICLE_PARKED_NO_DAYS }}
+    DRIVER_VIN_SHOWING_LIST: {{ DRIVER_VIN_SHOWING_LIST }}
+    DRIVER_PASSWORD_START_RANGE: {{ DRIVER_PASSWORD_START_RANGE }}
+    DRIVER_PASSWORD_END_RANGE: {{ DRIVER_PASSWORD_END_RANGE }}
+    JWT_TOKEN_VALID_TIME_IN_MIUNTES: {{jwt_token_valid_time_in_minutes}}
+    BULK_SEARCH_LIMIT: {{bulk_search_limit}}
+    BULK_VIN_INSERT_LIMIT: {{bulk_vin_insert_limit}}
+    TCU_TOKEN_GENERATION_CHECK_LIMIT: {{tcu_token_generation_check_limit}}
+    DATABASE_PORT : {{rds_port}}
+    DEBUG_MODE: {{DEBUG_MODE}}
+    SPARQPLUG_USERNAME: {{sparqplug_username}}
+    SPARQPLUG_CLIENT_ID: {{sparqplug_client_id}}
+    CV_SPARQPLUG_USERNAME: {{cv_sparqplug_username}}
+    SPARQPLUG_TOKEN_GENERATION_CHECK_LIMIT: {{sparqplug_token_generation_check_limit}}
+    SCHEDULER_TIME: {{scheduler_time}}
+    NON_OFFTAKE_OFFSET_TIME_IN_MINUTES: {{non_offtake_offset_time_in_minutes}}
+    OFFTAKE_OFFSET_TIME_IN_MINUTES: {{offtake_offset_time_in_minutes}}
+    CORS_ORIGIN_WHITELIST_URL: {{cors_origin_whitelist_url}}
+
+  secret:
+    DATABASE_NAME : {{cv_tyv_master_db}}
+    DATABASE_USER : {{cv_tyv_db_user}}
+    DATABASE_PASSWORD : {{cv_tyv_db_password}}
+    DATABASE_HOST : {{rds_host_tyv}}
+    POSTGRES_AUTO_DDL: validate
+    KEYCLOAK_URL: {{keycloak_user_info_endpoint}}
+    SERVER_URL: {{server_url}}
+    CLIENT_ID: {{client_id}}
+    REALM_NAME: {{realm_name}}
+    RESOURCE_ID: {{resources_id}}
+    SECRET_KEY: {{secret_key}}
+    AUTHORIZATION: {{authorization}}
+    USERNAME: {{username}}
+    PASSWORD: {{password}}
+    FLEETID: {{fleetid}}
+    TCU_TOKEN_URL: {{tcu_token_url}}
+    TCU_SEARCH_URL: {{tcu_search_url}}
+    FUEL_TRACKING_URL: {{fuel_tracking_url}}
+    TOKEN_AUTHORIZATION: {{token_authorization}}
+    ENCRYPTION_DECRYPTION_KEY: {{encryption_decryption_key}}
+    STANDARD_IV: {{standard_iv}}
+    SAMPRAVAH_AUTHENTICATION_TOKEN: {{sampravah_authentication_token}}
+    MES_BASIC_TOKEN: {{ MES_BASIC_TOKEN }}
+    SPARQPLUG_PASSWORD: {{sparqpluq_password}}
+    SPARKQPLUG_GRANT_TYPE: {{sparkqplug_grant_type}}
+    SPARQPLUG_CLIENT_SECRET: {{sparqplug_client_secret}}
+    CV_SPARQPLUG_PASSWORD: {{cv_sparqplug_password}}
+    SPARQPLUG_TOKEN_URL: {{sparqplug_token_url}}
+    SPARQPLUG_CONTENT_TYPE: {{sparqplug_content_type}}
+    SPARQPLUG_VIN_URL: {{sparqplug_vin_url}}
+    CV_SPARQPLUG_CLIENT_ID: {{cv_sparqplug_client_id}}
+    CV_SPARKQPLUG_GRANT_TYPE: {{cv_sparkqplug_grant_type}}
+    CV_SPARQPLUG_CLIENT_SECRET: {{cv_sparqplug_client_secret}}
+    CV_SPARQPLUG_TOKEN_URL: {{cv_sparqplug_token_url}}
+    CV_SPARQPLUG_CONTENT_TYPE: {{cv_sparqplug_content_type}}
+    CV_SPARQPLUG_VIN_URL: {{cv_sparqplug_vin_url}}
+    DJANGO_SECRET_KEY: {{django_secret_key}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: tyv
+      service_path: /
+      cors_allowed_origins:
+        - https://tyv.sadhan-ep-dev.tatamotors.com
+        - https://api.tyv.sadhan-ep-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        hosts:
+          - api.tyv.sadhan-ep-dev.tatamotors.com
+        paths:
+          - /
+        strip_path: "true"

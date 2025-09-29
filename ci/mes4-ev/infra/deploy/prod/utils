@@ -1,0 +1,14 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployUtils {
+    environment = 'mes4-ev/prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'utils'
+    namespace = 'mes4'
+    downstream_jobs = []
+    custom_vars = 'replenishment-vars.yml'
+    custom_vault_vars = 'replenishment-vault.yml'
+}

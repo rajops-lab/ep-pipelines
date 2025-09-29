@@ -1,0 +1,6 @@
+rds_host_dock_traffic_management: dock-management-prod.c3jf9pqvphaz.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+cv_dock_traffic_management_master_db: dock_management
+cv_dock_traffic_management_db_username: dock_management_rw
+sadhan_base_domain: sadhan-ep-prod.tatamotors.com
+

@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDockerWithPath {
+    code_repo = 'https://github.com/tmlconnected/ep-asset-management.git'
+    docker_file_dir = 'OPA/Dockerfile'   
+    code_path = ''
+    aws_ecr_base_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    ecr_repo_name = 'ep-asset-management'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-asset-management'
+    image_tag = 'fractal_opa'  
+}

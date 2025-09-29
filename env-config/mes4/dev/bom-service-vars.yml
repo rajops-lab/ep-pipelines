@@ -1,0 +1,7 @@
+bom_service_rds_host: avant-garde-common-dev.cignqmhpetvr.ap-south-1.rds.amazonaws.com
+bom_service_db: bom
+bom_service_db_username: bom_rw
+memory_request: 300Mi
+memory_limit: 512Mi
+replica_count: 1
+correct_hierarchy: ROOT.NS2060

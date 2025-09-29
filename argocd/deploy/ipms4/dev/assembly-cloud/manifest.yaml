@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: assembly-cloud
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/tmlconnected/ep-pipelines.git
+    targetRevision: argocd-test
+    path: argocd/helm/app
+    helm:
+      releaseName: assembly-cloud
+      valueFiles:
+        - "../../deploy/ipms4/dev/assembly-cloud/values.yaml"
+  destination:
+    name: in-cluster
+    namespace: assembly
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  revisionHistoryLimit: 10

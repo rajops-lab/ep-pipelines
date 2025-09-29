@@ -1,0 +1,34 @@
+{{- if and .Values.service (and .Values.cronjobs .Values.cronjobs.http) -}}
+{{- range .Values.cronjobs.http }}
+---
+apiVersion: {{ $.Values.cronjobs.apiVersion | default "batch/v1" }}
+kind: CronJob
+metadata:
+  namespace: {{ include "app.namespace" $ }}
+  name: {{ include "app.name" $ }}-{{.name}}
+  labels:
+    {{- include "app.labels" $ | nindent 4 }}
+spec:
+  schedule: "{{.schedule}}"
+  concurrencyPolicy: {{ .concurrencyPolicy | default "Allow" }}
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 0
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: job
+              image: 'giantswarm/tiny-tools'
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  memory: 50Mi
+                  cpu: 10m
+              args:
+                - '/bin/sh'
+                - '-c'
+                - 'curl --silent --show-error --fail {{ include "http.headers" .headers }} --request {{.method}} "http://{{ include "app.name" $ }}/{{.context}}"'
+{{- end }}
+{{- end }}

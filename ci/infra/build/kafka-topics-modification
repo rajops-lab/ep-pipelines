@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildDocker {
+    code_repo = 'https://github.com/tmlconnected/ep-infrastructure.git'
+    docker_file_dir = 'docker/kafka-topics-modification'
+    ecr_repo_name = 'kafka-config-script'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/kafka-config-script'
+    image_tag = '348f836c38e42a999d1fa29afa0bb1bfbf99a348'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+}

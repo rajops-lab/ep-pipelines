@@ -1,0 +1,30 @@
+replenishment_rds_host: replenishment-mes4-ev-pre-prod.cvcyicx0qjcx.ap-south-1.rds.amazonaws.com
+replenishment_rds_port: 5432
+replenishment_db: replenishment
+replenishment_db_username: replenishment_rw
+memory_request: 1024Mi
+cpu_request: 100m
+memory_limit: 2048Mi
+replica_count: 2
+cron_job_api_version: batch/v1
+postgres_auto_ddl: update
+flyway_locations: classpath:migrations/common,classpath:migrations/mes4-ev
+keycloak_base_url: https://auth.sadhan-pre-prod.tatamotors.com
+replenishment_app_name: replenishment
+sadhan_base_domain: sadhan-ev-pre-prod.tatamotors.com
+sadhan_authorization_base_url: http://authorization.mes4
+local_development_domain: http://localhost:3000/
+kafka_ips:
+  -10.164.56.10
+  -10.164.56.80
+  -10.164.56.109
+kafka_port: 9095
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+postgres_connection_pool: 5
+# TODO: cronjob scheduled to never run, change the bucket name & schedule when cronjob is needed for pre-prod
+replenishment_data_dump_bucket: sadhan-replenishment-mes4-ev-pre-prod-data-backup
+data_dump_schedule: '0 22 31 2 *'
+srs_base_domain: flowhouse.pre-prod.tatamotors.com
+srs_base_domain_ui: flowhouse.pre-prod.tatamotors.com

@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    name = 'vtdms'
+    application_file = 'mes4/dev/vtdms.yml'
+    context_environment = 'mes4/dev'
+    vars = 'common-vars.yml'
+    custom_vars = 'vtdms-vars.yml'
+    vault_vars = 'vtdms-vault.yml'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    namespace = 'sadhan'
+    github_repo = 'tmlconnected/pv-vtdms-backend-service'
+    ecr_repo_name = 'pv-vtdms-backend-service'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    release_notes_slack_channel = 'ep-releases-dev'
+    downstream_jobs = ['../../../info/dev/what-is-running']
+}

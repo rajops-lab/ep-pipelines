@@ -1,0 +1,64 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 5Mi
+  limits:
+    memory: 7Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /usr/share/nginx/html/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.dockmanagement.{{sadhan_base_domain}}",
+          AUTH_ENDPOINT: "{{central_keycloak_base_url}}/auth",
+          ENV_TYPE: "TEST",
+          APPLICATION_VARIANT: "sadhan"
+          UI_BASE_URL: "https://dockmanagement.{{sadhan_base_domain}}",
+        }
+    - name: keycloak-json
+      target: /usr/share/nginx/html/keycloak.json
+      content: |
+        {
+          "realm": "udyog",
+          "auth-server-url": "{{central_keycloak_base_url}}/auth/",
+          "ssl-required": "all",
+          "resource": "avantgarde-dockmanagement-cv",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: dock-traffic-management-ui
+      authn: none
+      cors_allowed_origins:
+        - https://{{sadhan_base_domain}}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: script-src ''self'' https://*.tatamotors.com; worker-src ''self'' https://*.tatamotors.com blob:; script-src-elem ''self'' https://cdnjs.cloudflare.com https://*.tatamotors.com'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - {{sadhan_base_domain}}
+        preserve_host: 'true'

@@ -1,0 +1,64 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 6061
+  monitoringPort: 6061
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 300Mi
+  limits:
+    memory: 512Mi
+env:
+  plaintext:
+    DB_HOST: {{rds_host_logistics}}
+    DB_PORT: {{rds_port}}
+    DB_NAME: {{pv_logistics_packaging_master_db}}
+    DB_PASSWORD: {{pv_logistics_packaging_master_db_password}}
+    DB_USER: {{pv_logistics_packaging_master_db_username}}
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SUPPLIER_MASTER_SERVICE_BASE_URL: {{supplier_master_service_base_url}}
+    PURCHASE_ORDER_KATE_TOPIC: {{purchase_order_kate_topic}}
+    PURCHASE_ORDER_CHANGES_KATE_TOPIC: {{purchase_order_changes_kate_topic}}
+    POSTGRES_AUTO_DDL: validate
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool_logistics}}
+    AWS_REGION_NAME: {{aws_region}}
+    DEBUG_MODE: {{DEBUG_MODE}}
+    KEYCLOAK_URL: {{central_keycloak_user_info_endpoint}}
+    S3_BUCKET_NAME: {{s3_bucket_logestics_pv_prod}}
+    DEFAULT_FROM_EMAIL_SADHAN: "no-reply@sadhan-pv.tatamotors.com"
+    DEFAULT_FROM_EMAIL_ESAKHA: "no-reply@esakha-pv.tatamotors.com"
+
+  secret:
+    SLACK_ALERTS_CHANNEL_NAME: {{logistics_slack_alert_channel_name}}
+    SLACK_APP_OAUTH_TOKEN: {{logistics_slack_app_oauth_token}}
+    SECRET_KEY: {{logistics_secret_key}}
+    AWS_ACCESS_KEY: {{aws_access_key_logestics_pv}}
+    AWS_SECRET_KEY: {{aws_secret_key_logestics_pv}}
+
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: logistics
+      service_path: /
+      cors_allowed_origins:
+        - https://api.{{sadhan_base_domain}}
+        - https://e-logistics-planning.sadhan-pv.tatamotors.com
+        - https://e-logistics-planning.esakha-pv.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /logistics
+        strip_path: "true"

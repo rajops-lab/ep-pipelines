@@ -1,0 +1,67 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 80
+  monitoringPort: 80
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 10Mi
+  limits:
+    memory: 14Mi
+mounts:
+  secret:
+    - name: ep-app-data
+      target: /var/www/EPAppData.js
+      content: |
+        window.epAppData = {
+          API_BASE_URL: "https://api.asset-management.esakha.tatamotors.com",
+          AUTH_ENDPOINT: "https://sso.tatamotors.com/auth",
+          ENV_TYPE: "PROD",
+          HOME_UI_BASE_URL: "https://home.mes4.tatamotors.com",
+          APPLICATION_VARIANT: "mes4",
+        }
+    - name: keycloak-json
+      target: /var/www/keycloak.json
+      content: |
+        {
+          "realm": "udyog",
+          "url": "https://sso.tatamotors.com/auth/",
+          "ssl-required": "all",
+          "clientId": "avantgarde-asset-mangement",
+          "public-client": true,
+          "confidential-port": 0
+        }
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-management-ui
+      authn: none
+      cors_allowed_origins:
+        - https://asset-management.esakha.tatamotors.com
+        - https://api.asset-management.esakha.tatamotors.com
+        - https://api.esakha-pv.tatamotors.com
+        - {{ local_development_domain }}
+      response_transformers:
+        - 'Cache-Control: no-cache'
+        - 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
+        - 'Content-Security-Policy: script-src ''self'' https://*.tatamotors.com'
+        - 'X-Content-Type-Options: nosniff'
+        - 'X-XSS-Protection: 1; mode=block'
+        - 'X-Frame-Options: SAMEORIGIN'
+        - 'Permissions-Policy: geolocation=(); camera=(); microphone=()'
+        - 'Referrer-Policy: no-referrer'
+      remove_headers:
+        - 'Server'
+      service_path: /
+      routes:
+        hosts:
+          - asset-management.esakha.tatamotors.com
+        preserve_host: "true"

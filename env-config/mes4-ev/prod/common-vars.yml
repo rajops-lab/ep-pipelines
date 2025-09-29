@@ -1,0 +1,47 @@
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: avant-garde-mes4-ev-prod.ciqnpttaibiw.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+postgres_connection_pool: 5
+ep_base_domain: mes4-ev.tatamotors.com
+kafka_ips:
+  - 172.16.232.198
+  - 172.16.233.85
+  - 172.16.233.156
+kafka_port: 9095
+keycloak_base_url: https://auth.ipms4.tatamotors.com
+keycloak_realm: enterprise
+central_keycloak_base_url: https://sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+keycloak_user_info_endpoint: https://auth.ipms4.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+api_host_base: https://api.mes4.tatamotors.com
+bom_service_base_url: http://bom-service.avant-garde
+application_variant: mes4
+default_java_flags: |
+  -XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=80
+  -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90
+dns:
+  nameservers:
+    - 172.31.16.55
+    - 172.31.16.57
+  searches:
+    - tmindia.tatamotors.com
+
+
+ca_connector_service_url: http://configurator.assembly
+sap_connector_service_url: http://sap-connector.assembly
+sap_raw_bom_bucket_location: tml-pv-prod-sap-raw-bom
+assembly_cloud_url: http://assembly-cloud.assembly
+aws_region: ap-south-1
+local_development_domain: https://planning.ipms4.tatamotors.com
+digital_twin_token_url: https://auth.ipms4.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/token
+digital_twin_line_url: https://api.mes4-ev.tatamotors.com/plant-master/lines?includeRelations=true
+esakha_base_domain: esakha.tatamotors.com
+digital_twin_env: "PROD"
+keycloak_realm_digital_twin: udyog
+client_id: avantgarde-digital-twin
+keycloak_base_url_digital_twin: https://sso.tatamotors.com
+sadhan_base_domain: sadhan-ev.tatamotors.com

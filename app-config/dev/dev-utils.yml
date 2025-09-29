@@ -1,0 +1,10 @@
+---
+hostAliases:
+{% for kafka_ip in kafka_ips %}
+  - ip: {{ kafka_ip }}
+    hostnames:
+      - kafka-{{ loop.index }}
+{% endfor %}
+  - ip: 172.31.32.36
+    hostnames:
+      - ipms-private.api.tatamotors.com

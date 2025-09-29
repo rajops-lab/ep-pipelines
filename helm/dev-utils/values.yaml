@@ -1,0 +1,42 @@
+replicaCount: 1
+utils:
+  enabled: true
+  name: utils
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-dev-utils # Update with your custom image that includes Kafka and PostgreSQL
+  tag: 8f19f94d01d664522a3f35c79e234458dd1956b5
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done
+  mounts:
+    pgpass: true
+    secret:
+      - name: bashrc
+        container: bash
+        target: /root/.bashrc
+        mode: "0700"
+        content: |
+          export ENV_SCRIPTS_DIR="$HOME/.helpers"
+          export PATH="/usr/local/kafka/bin:$PATH"
+
+          for helper in $ENV_SCRIPTS_DIR/*.sh; do
+            source $helper
+          done
+      - name: shell-helpers
+        container: shell
+        files:
+          - name: config.sh
+            mode: "0600"
+          - name: psql-aliases.sh
+            mode: "0600"
+          - name: dt-tables.sh
+            mode: "0600"
+          - name: kafka-helpers.sh
+            mode: "0600"
+          - name: data-movers.sh
+            mode: "0600"

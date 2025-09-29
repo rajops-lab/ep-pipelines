@@ -1,0 +1,23 @@
+cpu_request: 50m
+memory_request: 390Mi
+memory_limit: 512Mi
+replica_count: 1
+kafka_max_retry_attempt: 12
+ipms_api_base_url: "https://ipms-private-dev.api.tatamotors.com/ipms"
+ipms_private_host_name: ipms-private-dev.api.tatamotors.com
+
+ipmsstatus:
+  materials:
+    - chassis
+    - axle
+    - biw
+    - cab
+    - engine
+    - frame
+    - gearbox
+    - paint
+    - ats
+ddms:
+  plants:
+    - 3001
+cron_job_api_version: batch/v1

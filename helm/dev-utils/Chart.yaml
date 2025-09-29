@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ep-dev-utils
+description: Helm chart for TML Enterprise Platform Utils
+type: application
+version: 0.1.0
+appVersion: 1.0.0

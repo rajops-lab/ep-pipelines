@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'false'
+    environment = 'mes4/prod'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'home-ui'
+    namespace = 'mes4'
+    github_repo = 'tmlconnected/ep-home-ui'
+    release_notes_slack_channel = 'ep-releases-prod'
+    ecr_repo_name = 'ep-home-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-home-ui'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../info/prod/what-is-running']
+}

@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    name = 'assembly-plant'
+    application_file = 'common/assembly-plant.yml'
+    context_environment = 'ipms4/pre-prod'
+    vars = 'common-vars.yml'
+    custom_vars = 'assembly-lucknow-vars.yml'
+    vault_vars = 'assembly-lucknow-vault.yml'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    namespace = 'assembly-lucknow'
+    github_repo = 'tmlconnected/ep-assembly-root'
+    ecr_repo_name = 'ep-assembly'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    release_notes_slack_channel = 'ep-releases-pre-prod'
+    downstream_jobs = ['../../../info/pre-prod/what-is-running']
+}

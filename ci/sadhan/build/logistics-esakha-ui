@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithOutTestWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/pv-vendor-logistics-and-packaging-web-portal.git'
+    ecr_repo_name = 'pv-vendor-logistics-and-packaging-web-portal'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/pv-vendor-logistics-and-packaging-web-portal'
+    image_tag = 'pv-vendor-logistics-and-packaging-web-portal:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-nginx:1.19.10-alpine'
+}

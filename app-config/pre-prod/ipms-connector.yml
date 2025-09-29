@@ -1,0 +1,44 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 8080
+dns:
+  nameservers:
+    {%- for nameserver in ipms_dns.nameservers %}
+
+    - {{ nameserver }}
+    {%- endfor %}
+
+  searches:
+    {%- for search in ipms_dns.searches %}
+
+    - {{ search }}
+    {%- endfor %}
+
+env:
+  plaintext:
+    KAFKA_ENABLED: false
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    SAP_CLIENT_ID: {{ipms_client_id[plant]}}
+    SPRING_PROFILES_ACTIVE: prod
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    AWS_REGION: {{aws_region}}
+    PLANT_AGGREGATE_GENEALOGY: {{plat_aggregate_genealogy[plant]}}
+    PLANT_DDMS_RFC: {{plant_ddms_rfc[plant]}
+    PLANT_CHASSIS_GENEALOGY: {{plant_chassis_geneology[plant]}}
+  secret:
+    SAP_HOST: {{ipms_host[plant]}}
+    SAP_USER: {{ipms_user[plant]}}
+    SAP_PASSWORD: {{ipms_password[plant]}}
+replicaCount: 1
+resources: #monitor and update
+  requests:
+    cpu: 50m
+    memory: 316Mi
+  limits:
+    memory: 512Mi
+service:
+  port: 80

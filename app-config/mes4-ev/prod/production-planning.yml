@@ -1,0 +1,88 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  monitoringPort: 9096
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+replicaCount: 3
+resources:
+  requests:
+    cpu: 50m
+    memory: 470Mi
+  limits:
+    memory: 660Mi
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{rds_host}}:{{rds_port}}/{{production_planning_db}}?ApplicationName=production-planning'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_AUTO_DDL: validate
+    FLYWAY_ENABLE: {{flyway_enable}}
+    FLYWAY_LOCATIONS: {{flyway_locations}}
+    FLYWAY_BASELINE_ON_MIGRATE: true
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    EP_MATERIAL_MASTER_BASE_URL: 'http://material-master'
+    EP_AUTHENTICATION_SCHEME: 'https'
+    EP_AUTHENTICATION_HOST: 'auth.mes4-ev.tatamotors.com'
+    EP_AUTHENTICATION_PORT: '443'
+    EP_AUTHENTICATION_REALM: 'udyog'
+    EP_AUTHENTICATION_CLIENT_ID: 'avantgarde-production-planning'
+    BUSINESS_UNIT_NAME: 'EVBU'
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+  secret:
+    POSTGRES_USERNAME: {{production_planning_db_username}}
+    POSTGRES_PASSWORD: {{production_planning_db_password}}
+    EP_AUTHENTICATION_USERNAME: {{production_planning_api_username}}
+    EP_AUTHENTICATION_PASSWORD: '{{production_planning_api_password}}'
+    EP_AUTHENTICATION_CLIENT_SECRET: {{production_planning_api_client_secret}}
+    EXP_BOM_EV_SANAND2: 'true'
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: production-planning
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /
+      connect_timeout: 180
+      write_timeout: 180
+      read_timeout: 180
+      cors_allowed_origins:
+        - https://planning.{{ep_base_domain}}
+        - https://production-master-data.{{ep_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /production-planning
+        strip_path: "true"
+    - name: information-radiator
+      response_transformers:
+        - "Cache-Control: no-cache"
+        - "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+        - "Content-Security-Policy: default-src 'none'"
+        - "X-Content-Type-Options: nosniff"
+        - "X-XSS-Protection: 1; mode=block"
+        - "X-Frame-Options: SAMEORIGIN"
+      service_path: /vc/ordered-asn
+      cors_allowed_origins:
+        - https://planning.{{ep_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /information-radiator
+        strip_path: "true"

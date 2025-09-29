@@ -1,0 +1,8 @@
+rds_host_dock_traffic_management: dock-management-dev.ccofoavucedu.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+cv_dock_traffic_management_master_db: dock_management
+cv_dock_traffic_management_db_username: dock_management_rw
+sadhan_base_domain: sadhan-ep-dev.tatamotors.com
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+

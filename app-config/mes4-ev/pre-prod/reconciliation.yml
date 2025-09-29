@@ -1,0 +1,104 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 9090
+  livenessProbe: /actuator/health/liveness
+  readinessProbe: /actuator/health/readiness
+  monitoringPort: 9096
+env:
+  plaintext:
+    POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{esakha_rds_host}}:{{rds_port}}/{{reconciliation_db}}?rewriteBatchedInserts=true&ApplicationName=reconciliation'
+    POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+    POSTGRES_USERNAME: {{reconciliation_db_username}}
+    POSTGRES_AUTO_DDL: validate
+    KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+    API_SERVER_URL: 'https://api.{{esakha_base_domain}}/recon'
+    SUPPLIER_MASTER_SERVICE_BASE_URL: {{supplier_master_service_base_url}}
+    email_notification_sender_email: {{email_notification_sender_email}}
+    email_notification_bsl_group_email: {{email_notification_bsl_group_email}}
+    email_notification_application_url: {{email_notification_application_url}}
+    email_notification_allowed_domains: {{email_notification_allowed_domains}}
+    email_notification_region: {{email_notification_region}}
+    keycloak_base_url: '{{central_keycloak_base_url}}/auth/'
+    keycloak_realm_name: {{central_keycloak_realm}}
+    REINITIATE_FEATURE_FLAG: true
+    JAVA_TOOL_OPTIONS: '{{default_java_flags}}'
+    BUSINESS_UNIT: 'Other'
+  secret:
+    POSTGRES_PASSWORD: {{reconciliation_db_password}}
+    SFTP_USER: {{reconciliation_sftp_user}}
+    SFTP_PASSWORD: {{reconciliation_sftp_password}}
+    keycloak_reconciliation_user_group_id: {{central_keycloak_reconciliation_user_group_id}}
+    keycloak_client_id: {{central_keycloak_reconciliation_client_id}}
+    keycloak_client_secret: {{central_keycloak_reconciliation_client_secret}}
+replicaCount: 1
+resources:
+  requests:
+    cpu: 100m
+    memory: 768Mi
+  limits:
+    memory: 1048Mi
+podmonitor:
+  endpoints:
+    - path: /actuator/prometheus
+hostAliases:
+  - ip: 172.31.32.36
+    hostnames:
+      - sap-ecc-private.api.tatamotors.com
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: reconciliation
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      connect_timeout: 120
+      write_timeout: 120
+      read_timeout: 120
+      cors_allowed_origins:
+        - https://recon.{{esakha_base_domain}}
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /recon
+        strip_path: "true"
+    - name: reconciliation-swagger
+      authn: basic-auth
+      service_path: /swagger-ui
+      routes:
+        paths:
+          - /recon-swagger
+        strip_path: "true"
+cronjobs:
+  apiVersion: {{cron_job_api_version}}
+  app:
+    - name: file-ingestion
+      schedule: '0 */2 * * *'
+      hostAlias:
+        ip: 172.31.32.36
+        hostname: sap-ecc-private.api.tatamotors.com
+      image: "384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-reconciliation/file-ingestion:{{app_image_tag}}"
+      env:
+        plaintext:
+          POSTGRES_CONNECT_URL: 'jdbc:postgresql://{{esakha_rds_host}}:{{rds_port}}/{{reconciliation_db}}?rewriteBatchedInserts=true'
+          POSTGRES_CONNECTION_POOL: {{postgres_connection_pool}}
+          POSTGRES_USERNAME: {{reconciliation_db_username}}
+          POSTGRES_AUTO_DDL: validate
+          KAFKA_BROKER_SERVICE_URL: '{% for kafka_ip in kafka_ips %}{{kafka_ip}}:{{kafka_port}}{% if not loop.last %},{% endif %}{% endfor %}'
+          OBJECTSTORE_BUCKET: 'tml-mes4-ev-pre-prod-reconciliation-data'
+          OBJECTSTORE_REGION: 'ap-south-1'
+          OBJECTSTORE_TOKEN_EXPIRATION_TIME_IN_MILLIS: 300000
+          SFTP_PORT: '9091'
+          SFTP_HOST: 'tmsftp.tatamotors.com'
+          SFTP_FILE_PATH: '/from_TML/VBC/dev/'
+          SFTP_ARCHIVE_FILE_PATH: '/from_TML/VBC_ARCHIVE/dev/'
+          SUPPLIER_MASTER_SERVICE_BASE_URL: {{supplier_master_service_base_url}}
+          PUSH_GATEWAY_BASE_URL: 'http://prometheus-pushgateway.observability:9091'
+        secret:
+          POSTGRES_PASSWORD: {{reconciliation_db_password}}

@@ -1,0 +1,59 @@
+buildInfo:
+  github_repo_name: {{github_repo_name}}
+  ecr_repo_name: {{ecr_repo_name}}
+app:
+  image: {{app_image}}
+  tag: {{app_image_tag}}
+  port: 5000
+  monitoringPort: 5000
+  livenessProbe: /auth/liveness
+  readinessProbe: /auth/readiness
+replicaCount: {{auth_api_replica_count}}
+resources:
+  requests:
+    cpu: {{auth_api_cpu_request}}
+    memory: {{auth_api_memory_request}}
+  limits:
+    cpu: {{auth_api_cpu_limit}}
+    memory: {{auth_api_memory_limit}}
+env:
+  plaintext:
+    DB_API_HOST: {{db_api_host}}
+    DB_API_PORT: {{db_api_port}}
+    AUTH_API_HOST: {{AUTH_API_HOST}}
+    AUTH_API_PORT: {{AUTH_API_PORT}}
+    USER_API_HOST: {{USER_API_HOST}}
+    USER_API_PORT: {{USER_API_PORT}}
+    redis_url: {{redis_url}}
+    redis_port: {{redis_port}}
+    log_level: 'DEBUG'
+    log_mode: 'DEV'
+    multi_threaded: 'True'
+    schedule_jobs: 'True'
+    log_file_path: '/var/log/batchlog'
+    disconnection_threshold: '120'
+    nodata_threshold: '900'
+    wrong_datetime_threshold: '10'
+    ses_sourceemail: {{ses_sourceemail}}
+service:
+  port: 80
+kong:
+  image: {{kong_configure_image}}
+  tag: {{kong_configure_image_tag}}
+  services:
+    - name: asset-management-auth-api
+      authn: oidc-auth
+      user_info_endpoint: {{central_keycloak_user_info_endpoint}}
+      service_path: /
+      connect_timeout: 120
+      write_timeout: 120
+      read_timeout: 120
+      cors_allowed_origins:
+        - https://asset-management.{{fractal_base_domain}}
+        - https://api.asset-management.esakha-dev.tatamotors.com
+        - https://api.mes4-dev.tatamotors.com
+        - {{local_development_domain}}
+      routes:
+        paths:
+          - /auth
+        strip_path: "false"

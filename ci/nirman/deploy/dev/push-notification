@@ -1,0 +1,18 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployBuiltApp {
+    auto_deploy = 'true'
+    environment = 'dev'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig_credential = 'ep-kube-config'
+    application = 'push-notification'
+    namespace = 'ep'
+    github_repo = 'tmlconnected/ep-push-notification'
+    release_notes_slack_channel = 'ep-releases-dev'
+    ecr_repo_name = 'ep-push-notification'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-push-notification'
+    suggest_snapshot_tags = 'true'
+    downstream_jobs = ['../../../info/dev/what-is-running']
+}

@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    name = 'control-tower-web-frontend'
+    application_file = 'dev/samprawah-dashboard-ui.yml'
+    context_environment = 'ipms4/dev'
+    vars = 'common-vars.yml'
+    custom_vars = 'samprawah-dashboard-vars.yml'
+    vault_vars = 'samprawah-dashboard-vault.yml'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    namespace = 'ep'
+    github_repo = 'tmlconnected/control-tower-web-frontend'
+    ecr_repo_name = 'control-tower-web-frontend'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    release_notes_slack_channel = 'ep-releases-dev'
+    downstream_jobs = ['../../../info/dev/what-is-running']
+}

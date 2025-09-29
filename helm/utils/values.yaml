@@ -1,0 +1,85 @@
+replicaCount: 1
+tinyTools:
+  enabled: true
+  name: tiny-tools
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-tiny-tools
+  tag: alpine3.21
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done
+kafka:
+  enabled: true
+  name: kafka
+  image: bitnami/kafka
+  tag: latest
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done
+psql:
+  enabled: true
+  name: psql
+  image: postgres
+  tag: latest
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - sleep 86400
+mqttClient:
+  enabled: false
+  name: mqtt-client
+  image: efrecon/mqtt-client
+  tag: latest
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done
+ocClient:
+  enabled: false
+  name: oc-client
+  image: thelab/openshift-client
+  tag: latest
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done
+kafkaConfig:
+  enabled: false
+  name: kafka-config
+  image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/kafka-config-script
+  tag: 348f836c38e42a999d1fa29afa0bb1bfbf99a348
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      memory: 100Mi
+      cpu: 10m
+  command:
+    - sh
+    - -c
+    - while true; do sleep 60; done

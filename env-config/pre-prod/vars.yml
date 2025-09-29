@@ -1,0 +1,84 @@
+
+
+kong_configure_image: 384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-kong-configure
+kong_configure_image_tag: 0e9c43e27011446d4d20b48d5cf15cf33c323ef6
+kong_host: kong-kong-admin.kong.svc.cluster.local
+kong_port: 8001
+rds_host: enterprise-pre-prod.c3jf9pqvphaz.ap-south-1.rds.amazonaws.com
+rds_port: 5432
+backup_duration: 1
+backup_from_last_n_months: 1
+day_of_month: 1
+purge_duration: 1
+purge_from_last_n_months: 1
+day_of_month_for_purging: 10
+flyway_enable: false
+flyway_locations: classpath:migration/db/common,classpath:migration/db/ipms4
+flyway_baseline_on_migrate: true
+authorization_db: authorization
+authorization_db_username: authorization_rw
+esakha_authorization_db: esakha_authorization
+esakha_authorization_db_username: esakha_authorization_rw
+machine_integration_db: machine_integration
+machine_integration_db_username: machine_integration_rw
+material_master_db: material_master
+material_master_db_username: material_master_rw
+plant_master_db: plant_master
+plant_master_db_username: plant_master_rw
+production_planning_db: enterprisepreprod
+production_planning_db_username: serviceid_rw
+production_quality_db: production_quality
+production_quality_db_username: production_quality_rw
+production_broadcast_db: supply_chain
+production_broadcast_db_username: supply_chain_rw
+esakha_db: esakha
+esakha_db_username: esakha_rw
+asset_tracker_db: asset_tracker
+asset_tracker_db_username: asset_tracker_rw
+reconciliation_db: reconciliation
+reconciliation_db_username: reconciliation_rw
+po_master_db: po_master
+po_master_db_username: po_master_rw
+assembly_db: assembly_plant
+assembly_db_username: assembly_plant_rw
+postgres_connection_pool: 5
+postgres_auto_ddl: update
+ep_base_domain: ep-pre-prod.tatamotors.com
+esakha_base_domain: esakha-pre-prod.tatamotors.com
+avantgarde_base_domain: avantgarde-pre-prod.tatamotors.com
+sadhan_base_domain: sadhan-ep-pre-prod.tatamotors.com
+business_connect_domain: esakha-preprod.tatamotors.com
+kafka_ips:
+  - 172.31.168.87
+  - 172.31.168.137
+  - 172.31.169.35
+kafka_port: 9095
+keycloak_base_url: https://auth.ep-pre-prod.tatamotors.com
+keycloak_realm: enterprise
+keycloak_user_info_endpoint: https://auth.ep-pre-prod.tatamotors.com/auth/realms/enterprise/protocol/openid-connect/userinfo
+central_keycloak_base_url: https://qa.sso.tatamotors.com
+central_keycloak_realm: udyog
+central_keycloak_user_info_endpoint: https://qa.sso.tatamotors.com/auth/realms/udyog/protocol/openid-connect/userinfo
+central_keycloak_user_info_endpoint_external: https://qa.sso.tatamotors.com/auth/realms/Service/protocol/openid-connect/userinfo
+email_notification_sender_email: no-reply@esakha-pre-prod.tatamotors.com
+email_notification_bsl_group_email: ep-esakha-dev+bslgroup@sahaj.ai
+email_notification_application_url: https://recon.esakha-pre-prod.tatamotors.com/
+email_notification_allowed_domains: vishleshan.net,sahaj.ai,tatamotors.com
+email_notification_region: ap-south-1
+email_notification_adherence_report_cc_email_id_list: ep-esakha-dev@sahaj.ai
+email_notification_adherence_report_bcc_email_id_list: ra.sahaj@tatamotors.com
+email_notification_production_broadcast_application_url: https://production-broadcast.esakha-pre-prod.tatamotors.com/
+email_alt_to_address: viveka.ttl@tatamotors.com
+sap_connector_rfc_base_url: http://sap-connector.assembly
+bom_service_base_url: http://bom-service.avant-garde
+supplier_master_service_base_url: http://material-master.ep
+material_kate_topic: cv.kate.material-master-v1
+purchase_order_kate_topic: cv.kate.po-master-v1
+purchase_order_changes_kate_topic: cv.kate.po-master-changes-v1
+default_java_flags: "-XX:MinRAMPercentage=50 -XX:MaxRAMPercentage=75 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=9 -XX:AdaptiveSizePolicyWeight=90 -XX:+ExitOnOutOfMemoryError"
+monitoring_port: 9096
+adherence_report_disabled_plants: "SANAND2"
+local_development_domain: http://localhost:3000/
+replenishment_app_name: ekanban
+srs_base_domain: flowhouse.pre-prod.tatamotors.com
+cron_job_api_version: batch/v1

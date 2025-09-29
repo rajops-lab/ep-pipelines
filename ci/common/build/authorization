@@ -1,0 +1,13 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildGradleSpecifiedJavaVersionWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-authorization.git'
+    ecr_repo_name = 'ep-authorization'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-authorization'
+    image_tag = 'ep-authorization:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/authorization', '../deploy/dev/avantgarde-authorization']
+    java_base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-openjdk:openjdk-17-alpine'
+}

@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithOutTestWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/TYV-Frontend-app.git'
+    ecr_repo_name = 'cv-tyv-frontend-app'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/cv-tyv-frontend-app'
+    image_tag = 'cv-tyv-frontend-app:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    base_image_ecr_url = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-nginx:1.22.1-alpine'
+}

@@ -1,0 +1,12 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+buildNpmWithCustomRegistryWithCheckmarx {
+    code_repo = 'https://github.com/tmlconnected/ep-maintenance-ui.git'
+    ecr_repo_name = 'ep-maintenance-ui'
+    ecr_repo = '384588637744.dkr.ecr.ap-south-1.amazonaws.com/ep-maintenance-ui'
+    image_tag = 'ep-maintenance-ui:latest'
+    aws_ecr_base_url = 'https://384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    downstream_jobs = ['../deploy/dev/maintenance-ui']
+}

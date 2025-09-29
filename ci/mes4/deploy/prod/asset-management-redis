@@ -1,0 +1,22 @@
+library identifier: 'ep-pipelines@master', changelog: false, retriever: modernSCM(github(
+    credentialsId: 'github-credentials', repository: 'ep-pipelines', repoOwner: 'tmlconnected'
+))
+
+deployNamespacedApp {
+    name = 'asset-management-redis'
+    application_file = 'mes4/prod/asset-management-redis.yml'
+    context_environment = 'mes4/prod'
+    vars = 'common-vars.yml'
+    custom_vars = 'asset-management-vars.yml'
+    vault_vars = 'asset-management-vault.yml'
+    vault_credential = 'ansible-vault-password'
+    kubeconfig = 'ep-kube-config'
+    namespace = 'mes4'
+    github_repo = 'tmlconnected/ep-asset-management'
+    ecr_repo_name = 'ep-asset-management'
+    ecr_repo_id = '384588637744'
+    ecr_repo_host = '384588637744.dkr.ecr.ap-south-1.amazonaws.com'
+    suggest_snapshot_tags = 'true'
+    release_notes_slack_channel = 'ep-releases-prod'
+    downstream_jobs = ['../../info/prod/what-is-running']
+}
