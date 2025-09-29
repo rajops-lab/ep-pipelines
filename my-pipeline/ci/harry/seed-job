@@ -1,7 +1,7 @@
 // Harry's Master Seed Job
 // This creates all other deployment jobs
 
-library identifier: 'my-pipeline@master', changelog: false
+library identifier: 'my-pipeline@main', changelog: false
 
 node {
     stage('Checkout') {
